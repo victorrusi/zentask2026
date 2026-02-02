@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZenTask Pro - Reflexs52</title>
-    <link rel="manifest" href="manifest.json">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --primary: #5c67f2; --bg: #f4f7fe; --accent: #ff4757; }
@@ -12,7 +11,7 @@
         
         /* LOGIN */
         #login-screen { position: fixed; inset: 0; background: var(--primary); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        #login-screen input { padding: 15px; border-radius: 10px; border: none; width: 250px; margin-bottom: 15px; text-align: center; font-size: 1rem; }
+        #login-screen input { padding: 15px; border-radius: 10px; border: none; width: 250px; margin-bottom: 15px; text-align: center; font-size: 1rem; outline: none; }
         #login-screen button { padding: 12px 30px; border-radius: 10px; border: none; background: #1e293b; color: white; cursor: pointer; font-weight: bold; }
 
         /* CONTROLES */
@@ -25,16 +24,15 @@
 
         /* GRID */
         .year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
-        .day-card { background: white; border-radius: 15px; padding: 15px; border-top: 5px solid var(--primary); min-height: 300px; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .day-card { background: white; border-radius: 15px; padding: 15px; border-top: 5px solid var(--primary); min-height: 250px; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .task-list { margin-top: 10px; flex-grow: 1; }
-        .task-item { background: #f8fafc; padding: 10px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #cbd5e1; font-size: 0.9rem; }
-        .task-done { opacity: 0.5; background: #e2e8f0; text-decoration: line-through; }
+        .task-item { background: #f8fafc; padding: 8px; margin-bottom: 5px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #cbd5e1; font-size: 0.85rem; }
         
-        /* POPUP RECORDATORIO */
+        /* POPUP */
         #reminder-popup { 
             position: fixed; top: 20px; right: 20px; left: 20px; background: #1e293b; color: white; 
             padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
-            z-index: 3000; transform: translateY(-200%); transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            z-index: 3000; transform: translateY(-250%); transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
         }
         #reminder-popup.show { transform: translateY(0); }
         #reminder-popup button { margin-top: 15px; background: var(--primary); border: none; color: white; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
@@ -45,25 +43,26 @@
 <body>
 
 <div id="reminder-popup">
-    <strong style="color: #5c67f2;">🔔 Tareas para hoy:</strong>
-    <div id="reminder-list" style="margin-top:10px;"></div>
+    <strong style="color: #5c67f2; font-size: 1.1rem;">🔔 Tareas para hoy:</strong>
+    <div id="reminder-list" style="margin-top:10px; font-size: 0.9rem;"></div>
     <button onclick="cerrarPopup()">ENTENDIDO</button>
 </div>
 
 <div id="login-screen">
     <h1>ZenTask Pro</h1>
-    <input type="text" id="username-input" placeholder="Nombre de usuario..." autocomplete="off">
-    <button onclick="login()">ENTRAR</button>
+    <p style="margin-bottom:15px; opacity:0.8;">Acceso Seguro 2026</p>
+    <input type="text" id="username-input" placeholder="Tu nombre..." autocomplete="off">
+    <button onclick="login()">ACCEDER</button>
 </div>
 
 <div id="app-content" class="hidden">
     <div class="controls">
         <h2 style="margin:0; color:var(--primary);">ZenTask @<span id="display-user"></span></h2>
         <div class="nav-buttons" id="meses-nav">
-            <button onclick="filtrarMes('all', this)" class="active">AÑO</button>
-            <button onclick="filtrarSemana(this)">SEMANA</button>
-            <button onclick="exportarPDF()" class="btn-pdf">PDF</button>
-            <button onclick="cerrarApp()" class="btn-exit">SALIR</button>
+            <button onclick="filtrarMes('all', this)" class="active">TODO EL AÑO</button>
+            <button onclick="filtrarSemanaActual(this)">ESTA SEMANA</button>
+            <button onclick="exportarPDF()" class="btn-pdf">📄 PDF</button>
+            <button onclick="cerrarApp()" class="btn-exit">✖ SALIR</button>
         </div>
     </div>
     <div id="calendario" class="year-grid"></div>
@@ -74,7 +73,6 @@
     const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kcGVvenhwZ3RoaXFoemt0cGFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NjAxNzYsImV4cCI6MjA4NDMzNjE3Nn0.pdcQJGZ8FcNUn77JrOrNWkPJp-_ink9zIjkPwsbu-9U";
     let currentUser = "";
 
-    // Limpiar input al cargar
     window.onload = () => { document.getElementById('username-input').value = ""; };
 
     function getHeaders() {
@@ -82,7 +80,7 @@
             'apikey': KEY,
             'Authorization': 'Bearer ' + KEY,
             'Content-Type': 'application/json',
-            'x-user-name': currentUser.toLowerCase() // Siempre enviamos minúsculas
+            'x-user-name': currentUser.toLowerCase() // Buscamos siempre en minúsculas
         };
     }
 
@@ -100,33 +98,37 @@
     function cerrarApp() { location.reload(); }
 
     async function cargar() {
-        const res = await fetch(URL, { headers: getHeaders() });
-        const tareas = await res.json();
-        
-        document.querySelectorAll('.task-list').forEach(l => l.innerHTML = '');
-        const hoy = new Date().toISOString().split('T')[0];
-        const tareasHoy = [];
+        try {
+            const res = await fetch(URL, { headers: getHeaders() });
+            const tareas = await res.json();
+            
+            document.querySelectorAll('.task-list').forEach(l => l.innerHTML = '');
+            const hoyStr = new Date().toISOString().split('T')[0];
+            const tareasHoy = [];
 
-        tareas.forEach(t => {
-            if(t.task_date === hoy && !t.completed) tareasHoy.push(t.title);
-            const contenedor = document.querySelector(`[data-date="${t.task_date}"] .task-list`);
-            if (contenedor) {
-                contenedor.innerHTML += `
-                    <div class="task-item ${t.completed ? 'task-done' : ''}">
-                        <span>${t.title}</span>
-                        <button onclick="eliminar(${t.id})" style="border:none; background:none; color:red; cursor:pointer;">×</button>
-                    </div>`;
+            tareas.forEach(t => {
+                if(t.task_date === hoyStr && !t.completed) tareasHoy.push(t.title);
+                const contenedor = document.querySelector(`[data-date="${t.task_date}"] .task-list`);
+                if (contenedor) {
+                    contenedor.innerHTML += `
+                        <div class="task-item">
+                            <span>${t.title}</span>
+                            <button onclick="eliminar(${t.id})" style="border:none; background:none; color:red; cursor:pointer; font-weight:bold;">×</button>
+                        </div>`;
+                }
+            });
+
+            if(tareasHoy.length > 0) {
+                document.getElementById('reminder-list').innerHTML = tareasHoy.map(t => "• " + t).join('<br>');
+                document.getElementById('reminder-popup').classList.add('show');
             }
-        });
-        if(tareasHoy.length > 0) {
-            document.getElementById('reminder-list').innerHTML = tareasHoy.join('<br>');
-            document.getElementById('reminder-popup').classList.add('show');
-        }
+        } catch(e) { console.log("Error de conexión"); }
     }
 
     function cerrarPopup() { document.getElementById('reminder-popup').classList.remove('show'); }
 
     async function eliminar(id) {
+        if(!confirm("¿Borrar tarea?")) return;
         await fetch(`${URL}?id=eq.${id}`, { method: 'DELETE', headers: getHeaders() });
         cargar();
     }
@@ -147,15 +149,13 @@
         const grid = document.getElementById('calendario');
         grid.innerHTML = "";
         const fechaBase = new Date("2026-01-01T00:00:00");
-        const mesesNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+        const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
         
-        // Generar botones de meses si no existen
         const nav = document.getElementById('meses-nav');
         if(nav.querySelectorAll('.m-btn').length === 0) {
-            mesesNames.forEach((m, i) => {
+            meses.forEach((m, i) => {
                 const b = document.createElement('button');
-                b.innerText = m;
-                b.className = 'm-btn';
+                b.innerText = m; b.className = 'm-btn';
                 b.onclick = (e) => filtrarMes(i, e.target);
                 nav.insertBefore(b, document.querySelector('.btn-pdf'));
             });
@@ -166,11 +166,11 @@
             const iso = d.toISOString().split('T')[0];
             grid.innerHTML += `
                 <div class="day-card" data-date="${iso}" data-mes="${d.getMonth()}">
-                    <strong>${d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' })}</strong>
+                    <strong style="color:var(--primary)">${d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' })} ${meses[d.getMonth()]}</strong>
                     <div class="task-list"></div>
-                    <div style="margin-top:auto; display:flex; gap:5px;">
-                        <input type="text" style="width:70%">
-                        <button onclick="guardar(this, '${iso}')">+</button>
+                    <div style="margin-top:auto; display:flex; gap:5px; padding-top:10px;">
+                        <input type="text" placeholder="..." style="flex-grow:1; border:1px solid #ddd; border-radius:5px; padding:5px;">
+                        <button onclick="guardar(this, '${iso}')" style="background:var(--primary); color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">+</button>
                     </div>
                 </div>`;
         }
@@ -181,27 +181,4 @@
         document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         document.querySelectorAll('.day-card').forEach(c => {
-            c.classList.toggle('hidden', m !== 'all' && parseInt(c.dataset.mes) !== m);
-        });
-    }
-
-    function filtrarSemana(btn) {
-        document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const hoy = new Date();
-        const fin = new Date(hoy); fin.setDate(hoy.getDate() + 7);
-        document.querySelectorAll('.day-card').forEach(c => {
-            const f = new Date(c.dataset.date + "T00:00:00");
-            c.classList.toggle('hidden', !(f >= hoy && f < fin));
-        });
-    }
-
-    function exportarPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.text(`Tareas de ${currentUser}`, 20, 20);
-        doc.save('tareas.pdf');
-    }
-</script>
-</body>
-</html>
+            c.classList.toggle('hidden', m !== 'all' && parseInt(c.dataset.mes) !==
