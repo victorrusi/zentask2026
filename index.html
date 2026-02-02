@@ -50,7 +50,7 @@
 
 <div id="login-screen">
     <h1>ZenTask Pro</h1>
-    <p style="margin-bottom:15px; opacity:0.8;">Acceso Seguro 2026</p>
+    <p style="margin-bottom:15px; opacity:0.8;">Acceso Privado 2026</p>
     <input type="text" id="username-input" placeholder="Tu nombre..." autocomplete="off">
     <button onclick="login()">ACCEDER</button>
 </div>
@@ -59,7 +59,7 @@
     <div class="controls">
         <h2 style="margin:0; color:var(--primary);">ZenTask @<span id="display-user"></span></h2>
         <div class="nav-buttons" id="meses-nav">
-            <button onclick="filtrarMes('all', this)" class="active">TODO EL AÑO</button>
+            <button onclick="filtrarMes('all', this)" class="active">AÑO</button>
             <button onclick="filtrarSemanaActual(this)">ESTA SEMANA</button>
             <button onclick="exportarPDF()" class="btn-pdf">📄 PDF</button>
             <button onclick="cerrarApp()" class="btn-exit">✖ SALIR</button>
@@ -80,7 +80,7 @@
             'apikey': KEY,
             'Authorization': 'Bearer ' + KEY,
             'Content-Type': 'application/json',
-            'x-user-name': currentUser.toLowerCase() // Buscamos siempre en minúsculas
+            'x-user-name': currentUser.toLowerCase() 
         };
     }
 
@@ -139,7 +139,12 @@
         await fetch(URL, {
             method: 'POST',
             headers: getHeaders(),
-            body: JSON.stringify({ title: input.value, task_date: fecha, name: currentUser.toLowerCase(), completed: false })
+            body: JSON.stringify({ 
+                title: input.value, 
+                task_date: fecha, 
+                name: currentUser.toLowerCase(), 
+                completed: false 
+            })
         });
         input.value = "";
         cargar();
@@ -169,16 +174,4 @@
                     <strong style="color:var(--primary)">${d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' })} ${meses[d.getMonth()]}</strong>
                     <div class="task-list"></div>
                     <div style="margin-top:auto; display:flex; gap:5px; padding-top:10px;">
-                        <input type="text" placeholder="..." style="flex-grow:1; border:1px solid #ddd; border-radius:5px; padding:5px;">
-                        <button onclick="guardar(this, '${iso}')" style="background:var(--primary); color:white; border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">+</button>
-                    </div>
-                </div>`;
-        }
-        cargar();
-    }
-
-    function filtrarMes(m, btn) {
-        document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.querySelectorAll('.day-card').forEach(c => {
-            c.classList.toggle('hidden', m !== 'all' && parseInt(c.dataset.mes) !==
+                        <input type="text
