@@ -89,7 +89,7 @@
             nav.appendChild(btn);
         });
 
-        // Generar Calendario 2026
+        // Generar Calendario 2026 completo
         const grid = document.getElementById('calendario');
         grid.innerHTML = "";
         const fecha = new Date("2026-01-01T00:00:00");
@@ -106,15 +106,14 @@
                 </div>
                 <div class="task-list" style="flex-grow:1; margin:10px 0;"></div>
                 <div style="display:flex; gap:5px;">
-                    <input type="text" class="task-in" placeholder="Tarea..." style="flex-grow:1; border:1px solid #ddd; border-radius:5px; padding:5px; font-size:0.8rem; outline:none;">
-                    <button onclick="guardar(this, '${iso}')" style="background:var(--primary); color:white; border:none; border-radius:5px; width:30px; cursor:pointer; font-weight:bold;">+</button>
+                    <input type="text" class="task-input-field" placeholder="Tarea..." style="flex-grow:1; border:1px solid #ddd; border-radius:5px; padding:5px; font-size:0.8rem; outline:none;">
+                    <button onclick="guardarTarea(this, '${iso}')" style="background:var(--primary); color:white; border:none; border-radius:5px; width:30px; cursor:pointer; font-weight:bold;">+</button>
                 </div>`;
             grid.appendChild(card);
             fecha.setDate(fecha.getDate() + 1);
         }
 
         cargarTareas();
-        // ESTA ES LA LÍNEA QUE SITÚA LA APP EN LA SEMANA ACTUAL NADA MÁS EMPEZAR
         filtrarSemana(document.getElementById('btn-week'));
     }
 
@@ -134,22 +133,28 @@
             }
         });
 
+        // POP-UP: Mostrar solo si hay tareas hoy
         if(hoyLista.length > 0) {
             document.getElementById('reminder-list').innerHTML = hoyLista.map(t => "• " + t).join('<br>');
-            setTimeout(() => document.getElementById('reminder-popup').classList.add('show'), 500);
+            setTimeout(() => document.getElementById('reminder-popup').classList.add('show'), 1000);
         }
     }
 
-    async function guardar(btn, fecha) {
-        const input = btn.parentElement.querySelector('.task-in');
-        if(!input.value.trim()) return;
+    // FUNCIÓN AGREGAR TAREA CORREGIDA
+    async function guardarTarea(btn, fecha) {
+        const input = btn.previousElementSibling; // Busca el input que está justo antes del botón
+        const titulo = input.value.trim();
+        
+        if(!titulo) return;
+
         await fetch(URL, {
             method: 'POST',
             headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: input.value, task_date: fecha, name: currentUser, completed: false })
+            body: JSON.stringify({ title: titulo, task_date: fecha, name: currentUser, completed: false })
         });
-        input.value = "";
-        cargarTareas();
+        
+        input.value = ""; // Limpia el input
+        cargarTareas(); // Refresca la lista
     }
 
     async function eliminar(id) {
