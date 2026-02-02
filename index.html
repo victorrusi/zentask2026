@@ -7,28 +7,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --primary: #5c67f2; --bg: #f4f7fe; --danger: #ef4444; --pdf: #10b981; --dark: #1e293b; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; color: #1e293b; }
-        
-        /* LOGIN */
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; }
         #login-screen { position: fixed; inset: 0; background: var(--primary); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
         #login-screen input { padding: 15px; border-radius: 10px; border: none; width: 260px; margin-bottom: 15px; text-align: center; font-size: 1rem; }
         #login-screen button { padding: 12px 30px; border-radius: 10px; border: none; background: var(--dark); color: white; cursor: pointer; font-weight: bold; }
-
-        /* POPUP */
         #reminder-popup { position: fixed; top: -600px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--dark); color: white; padding: 25px; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.5); z-index: 6000; transition: 0.5s; text-align: center; }
         #reminder-popup.show { top: 30px; }
-
         #app-content { display: none; }
         .controls { position: sticky; top: 0; z-index: 100; background: white; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
-        
         .nav-buttons { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 10px; }
-        .nav-buttons button { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.7rem; background: #e2e8f0; color: #475569; }
+        .nav-buttons button { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.7rem; background: #e2e8f0; }
         .nav-buttons button.active { background: var(--primary); color: white; }
-
         .year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
         .day-card { background: white; border-radius: 15px; padding: 15px; border-top: 5px solid var(--primary); min-height: 250px; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .day-card.hidden { display: none !important; }
-
         .task-item { background: #f8fafc; padding: 8px; margin-bottom: 5px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #cbd5e1; font-size: 0.85rem; }
         .btn-clear-day { background: #fee2e2; color: #ef4444; border: none; padding: 4px 8px; border-radius: 5px; font-size: 0.6rem; cursor: pointer; font-weight: bold; }
     </style>
@@ -55,7 +47,7 @@
             <button id="btn-all" onclick="filtrarMes('all', this)">TODO EL AÑO</button>
         </div>
         <div class="nav-buttons" style="margin-top:10px;">
-            <button onclick="exportarPDF()" style="background:var(--pdf); color:white;">DESCARGAR PDF</button>
+            <button onclick="exportarPDF()" style="background:var(--pdf); color:white;">PDF</button>
             <button onclick="location.reload()" style="background:var(--danger); color:white;">SALIR</button>
         </div>
     </div>
@@ -80,16 +72,16 @@
     }
 
     function iniciarApp() {
-        // Generar botones de meses
         const nav = document.getElementById('nav-container');
-        mesesNom.forEach((m, idx) => {
-            const btn = document.createElement('button');
-            btn.innerText = m.substring(0,3).toUpperCase();
-            btn.onclick = (e) => filtrarMes(idx, e.target);
-            nav.appendChild(btn);
-        });
+        if(nav.children.length <= 2) {
+            mesesNom.forEach((m, idx) => {
+                const btn = document.createElement('button');
+                btn.innerText = m.substring(0,3).toUpperCase();
+                btn.onclick = (e) => filtrarMes(idx, e.target);
+                nav.appendChild(btn);
+            });
+        }
 
-        // Generar Calendario 2026 completo
         const grid = document.getElementById('calendario');
         grid.innerHTML = "";
         const fecha = new Date("2026-01-01T00:00:00");
@@ -106,13 +98,12 @@
                 </div>
                 <div class="task-list" style="flex-grow:1; margin:10px 0;"></div>
                 <div style="display:flex; gap:5px;">
-                    <input type="text" class="task-input-field" placeholder="Tarea..." style="flex-grow:1; border:1px solid #ddd; border-radius:5px; padding:5px; font-size:0.8rem; outline:none;">
-                    <button onclick="guardarTarea(this, '${iso}')" style="background:var(--primary); color:white; border:none; border-radius:5px; width:30px; cursor:pointer; font-weight:bold;">+</button>
+                    <input type="text" class="task-in" placeholder="Tarea..." style="flex-grow:1; border:1px solid #ddd; border-radius:5px; padding:5px; font-size:0.8rem;">
+                    <button onclick="guardar(this, '${iso}')" style="background:var(--primary); color:white; border:none; border-radius:5px; width:30px; cursor:pointer;">+</button>
                 </div>`;
             grid.appendChild(card);
             fecha.setDate(fecha.getDate() + 1);
         }
-
         cargarTareas();
         filtrarSemana(document.getElementById('btn-week'));
     }
@@ -121,7 +112,6 @@
         const res = await fetch(`${URL}?name=eq.${currentUser}`, { headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}` } });
         const tareas = await res.json();
         document.querySelectorAll('.task-list').forEach(l => l.innerHTML = '');
-        
         const hoy = new Date().toLocaleDateString('sv-SE');
         let hoyLista = [];
 
@@ -133,28 +123,26 @@
             }
         });
 
-        // POP-UP: Mostrar solo si hay tareas hoy
-        if(hoyLista.length > 0) {
+        if(hoyLista.length > 0 && !document.getElementById('reminder-popup').classList.contains('show')) {
             document.getElementById('reminder-list').innerHTML = hoyLista.map(t => "• " + t).join('<br>');
             setTimeout(() => document.getElementById('reminder-popup').classList.add('show'), 1000);
         }
     }
 
-    // FUNCIÓN AGREGAR TAREA CORREGIDA
-    async function guardarTarea(btn, fecha) {
-        const input = btn.previousElementSibling; // Busca el input que está justo antes del botón
-        const titulo = input.value.trim();
-        
-        if(!titulo) return;
+    async function guardar(btn, fecha) {
+        const input = btn.previousElementSibling;
+        const texto = input.value.trim();
+        if(!texto) return;
 
-        await fetch(URL, {
-            method: 'POST',
-            headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: titulo, task_date: fecha, name: currentUser, completed: false })
-        });
-        
-        input.value = ""; // Limpia el input
-        cargarTareas(); // Refresca la lista
+        try {
+            await fetch(URL, {
+                method: 'POST',
+                headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: texto, task_date: fecha, name: currentUser, completed: false })
+            });
+            input.value = "";
+            cargarTareas();
+        } catch(e) { console.error("Error al guardar:", e); }
     }
 
     async function eliminar(id) {
@@ -179,13 +167,13 @@
     }
 
     function filtrarSemana(btn) {
+        if(!btn) return;
         document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         const hoy = new Date();
         const diff = hoy.getDay() === 0 ? -6 : 1 - hoy.getDay();
         const lunes = new Date(hoy); lunes.setDate(hoy.getDate() + diff); lunes.setHours(0,0,0,0);
         const domingo = new Date(lunes); domingo.setDate(lunes.getDate() + 6); domingo.setHours(23,59,59,999);
-
         document.querySelectorAll('.day-card').forEach(c => {
             const f = new Date(c.dataset.date + "T00:00:00");
             c.classList.toggle('hidden', !(f >= lunes && f <= domingo));
