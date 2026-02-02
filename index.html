@@ -7,48 +7,41 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --primary: #5c67f2; --bg: #f4f7fe; --accent: #ff4757; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; }
-        
+        body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 0; }
         #login-screen { position: fixed; inset: 0; background: var(--primary); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
         #login-screen input { padding: 15px; border-radius: 10px; border: none; width: 250px; margin-bottom: 15px; text-align: center; font-size: 1rem; }
-        #login-screen button { padding: 12px 30px; border-radius: 10px; border: none; background: #1e293b; color: white; cursor: pointer; font-weight: bold; }
-
         #app-content { display: none; }
-        .controls { position: sticky; top: 0; z-index: 100; background: white; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .nav-buttons { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
-        .nav-buttons button { background: #f1f5f9; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
-        .nav-buttons button.active { background: var(--primary); color: white; }
-
-        .year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
-        .day-card { background: white; border-radius: 15px; padding: 15px; border-top: 5px solid var(--primary); min-height: 250px; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .task-list { margin-top: 10px; flex-grow: 1; }
-        .task-item { background: #f8fafc; padding: 8px; margin-bottom: 5px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #cbd5e1; font-size: 0.85rem; }
-        
-        #reminder-popup { position: fixed; top: -300px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #1e293b; color: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 3000; transition: 0.6s; }
-        #reminder-popup.show { top: 20px; }
+        .controls { position: sticky; top: 0; background: white; padding: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 100; }
+        .nav-buttons { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 10px; }
+        .nav-buttons button { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .active { background: var(--primary); color: white; }
+        .year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px; }
+        .day-card { background: white; padding: 15px; border-radius: 15px; border-top: 5px solid var(--primary); min-height: 200px; display: flex; flex-direction: column; }
+        .task-item { background: #f1f5f9; padding: 8px; margin-top: 5px; border-radius: 5px; display: flex; justify-content: space-between; font-size: 0.9rem; }
+        #reminder-popup { position: fixed; top: -300px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #1e293b; color: white; padding: 20px; border-radius: 15px; transition: 0.5s; z-index: 3000; text-align: center; }
+        .show-popup { top: 20px !important; }
     </style>
 </head>
 <body>
 
 <div id="reminder-popup">
-    <strong style="color: #5c67f2;">🔔 Tareas para hoy:</strong>
-    <div id="reminder-list" style="margin-top:10px;"></div>
-    <button onclick="document.getElementById('reminder-popup').classList.remove('show')" style="width:100%; margin-top:10px; border:none; background:var(--primary); color:white; padding:8px; border-radius:5px; cursor:pointer;">ENTENDIDO</button>
+    <strong>🔔 Tareas para hoy:</strong>
+    <div id="reminder-list" style="margin: 10px 0; text-align: left;"></div>
+    <button onclick="document.getElementById('reminder-popup').classList.remove('show-popup')" style="width:100%; border:none; background:var(--primary); color:white; padding:10px; border-radius:5px; cursor:pointer;">Entendido</button>
 </div>
 
 <div id="login-screen">
     <h1>ZenTask Pro</h1>
     <input type="text" id="username-input" placeholder="Tu nombre..." autocomplete="off">
-    <button onclick="login()">ENTRAR</button>
+    <button onclick="login()" style="padding: 10px 20px; cursor: pointer; border-radius: 8px;">ENTRAR</button>
 </div>
 
 <div id="app-content">
     <div class="controls">
-        <h2 style="margin:0; color:var(--primary);">ZenTask @<span id="display-user"></span></h2>
+        <h2 style="margin:0">ZenTask @<span id="display-user"></span></h2>
         <div class="nav-buttons">
-            <button onclick="filtrarMes('all', this)" class="active">TODO EL AÑO</button>
+            <button onclick="filtrarMes('all', this)" class="active">AÑO</button>
             <button onclick="filtrarSemanaActual(this)">ESTA SEMANA</button>
-            <button onclick="exportarPDF()" style="background:#10b981; color:white;">PDF</button>
             <button onclick="location.reload()" style="background:var(--accent); color:white;">SALIR</button>
         </div>
     </div>
@@ -72,12 +65,10 @@
     }
 
     async function cargar() {
-        // Al estar el RLS desactivado, filtramos por la URL
         const res = await fetch(`${URL}?name=eq.${currentUser}`, {
             headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}` }
         });
         const tareas = await res.json();
-        
         document.querySelectorAll('.task-list').forEach(l => l.innerHTML = '');
         const hoy = new Date().toISOString().split('T')[0];
         const tareasHoy = [];
@@ -85,17 +76,15 @@
         tareas.forEach(t => {
             if(t.task_date === hoy) tareasHoy.push(t.title);
             const card = document.querySelector(`[data-date="${t.task_date}"] .task-list`);
-            if (card) {
-                card.innerHTML += `
-                    <div class="task-item">
-                        <span>${t.title}</span>
-                        <button onclick="eliminar(${t.id})" style="border:none; color:red; cursor:pointer;">×</button>
-                    </div>`;
+            if(card) {
+                card.innerHTML += `<div class="task-item">${t.title} <button onclick="eliminar(${t.id})" style="border:none; color:red; cursor:pointer;">x</button></div>`;
             }
         });
+
+        // POPUP SOLO SI HAY TAREAS
         if(tareasHoy.length > 0) {
             document.getElementById('reminder-list').innerHTML = tareasHoy.join('<br>');
-            document.getElementById('reminder-popup').classList.add('show');
+            document.getElementById('reminder-popup').classList.add('show-popup');
         }
     }
 
@@ -131,10 +120,10 @@
             grid.innerHTML += `
                 <div class="day-card" data-date="${iso}" data-mes="${d.getMonth()}">
                     <strong>${d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' })} ${meses[d.getMonth()]}</strong>
-                    <div class="task-list"></div>
+                    <div class="task-list" style="flex-grow:1;"></div>
                     <div style="margin-top:auto; display:flex; gap:5px;">
-                        <input type="text" placeholder="..." style="flex-grow:1; border:1px solid #ddd; border-radius:5px; padding:5px;">
-                        <button onclick="guardar(this, '${iso}')" style="background:var(--primary); color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">+</button>
+                        <input type="text" style="flex-grow:1;">
+                        <button onclick="guardar(this, '${iso}')">+</button>
                     </div>
                 </div>`;
         }
@@ -147,7 +136,6 @@
         document.querySelectorAll('.day-card').forEach(c => {
             c.style.display = (m === 'all' || parseInt(c.dataset.mes) === m) ? 'flex' : 'none';
         });
-        window.scrollTo(0,0);
     }
 
     function filtrarSemanaActual(btn) {
@@ -156,29 +144,10 @@
         const hoy = new Date();
         const lunes = new Date(hoy.setDate(hoy.getDate() - (hoy.getDay() || 7) + 1));
         const domingo = new Date(new Date(lunes).setDate(lunes.getDate() + 6));
-        
         document.querySelectorAll('.day-card').forEach(c => {
             const f = new Date(c.dataset.date + "T00:00:00");
             c.style.display = (f >= lunes && f <= domingo) ? 'flex' : 'none';
         });
-        window.scrollTo(0,0);
-    }
-
-    function exportarPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.text(`Tareas de ${currentUser}`, 20, 20);
-        let y = 30;
-        document.querySelectorAll('.day-card:not([style*="display: none"])').forEach(card => {
-            const fecha = card.querySelector('strong').innerText;
-            const tareas = card.querySelectorAll('.task-item span');
-            if(tareas.length > 0) {
-                doc.text(fecha + ":", 20, y); y += 10;
-                tareas.forEach(t => { doc.text("- " + t.innerText, 30, y); y += 7; });
-                y += 5;
-            }
-        });
-        doc.save(`ZenTask_${currentUser}.pdf`);
     }
 </script>
 </body>
