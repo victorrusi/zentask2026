@@ -2,210 +2,181 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZenTask Pro 2026</title>
+    <title>RuViGesTASK 2026</title>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="RuViGesTASK">
+    <meta name="apple-mobile-web-app-title" content="RuViGesTASK">
+    <meta name="theme-color" content="#5c67f2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --primary: #5c67f2; --bg: #f4f7fe; --danger: #ef4444; --pdf: #10b981; --dark: #1e293b; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; }
-        #login-screen { position: fixed; inset: 0; background: var(--primary); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        #login-screen input { padding: 15px; border-radius: 10px; border: none; width: 260px; margin-bottom: 15px; text-align: center; font-size: 1rem; }
-        #login-screen button { padding: 12px 30px; border-radius: 10px; border: none; background: var(--dark); color: white; cursor: pointer; font-weight: bold; }
-        #reminder-popup { position: fixed; top: -600px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--dark); color: white; padding: 25px; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.5); z-index: 6000; transition: 0.5s; text-align: center; }
-        #reminder-popup.show { top: 30px; }
+        :root { --p: #5c67f2; --bg: #f4f7fe; --d: #ef4444; --pdf: #10b981; --dark: #1e293b; --a: #ff9f43; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; -webkit-tap-highlight-color: transparent; }
+        #login-screen { position: fixed; inset: 0; background: var(--p); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        #login-screen input { padding: 12px; border-radius: 8px; border: none; width: 220px; margin-bottom: 10px; text-align: center; font-size: 16px; }
         #app-content { display: none; }
-        .controls { position: sticky; top: 0; z-index: 100; background: white; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
-        .nav-buttons { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 10px; }
-        .nav-buttons button { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.7rem; background: #e2e8f0; }
-        .nav-buttons button.active { background: var(--primary); color: white; }
-        .year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
-        .day-card { background: white; border-radius: 15px; padding: 15px; border-top: 5px solid var(--primary); min-height: 250px; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .day-card.hidden { display: none !important; }
-        .task-item { background: #f8fafc; padding: 8px; margin-bottom: 5px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #cbd5e1; font-size: 0.85rem; }
-        .btn-clear-day { background: #fee2e2; color: #ef4444; border: none; padding: 4px 8px; border-radius: 5px; font-size: 0.6rem; cursor: pointer; font-weight: bold; }
+        .controls { position: sticky; top: 0; z-index: 100; background: white; padding: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+        .nav-buttons { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 5px; }
+        .nav-buttons button { padding: 8px 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.7rem; background: #e2e8f0; color: #1e293b; }
+        .nav-buttons button.active { background: var(--p); color: white; }
+        .month-selector { display: none; justify-content: center; gap: 3px; margin-top: 10px; flex-wrap: wrap; }
+        .year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; padding: 12px; }
+        .day-card { background: white; border-radius: 12px; padding: 12px; border-top: 4px solid var(--p); display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .hidden { display: none !important; }
+        .day-total { font-size: 0.7rem; background: var(--a); color: white; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
+        .task-item { padding: 6px 10px; margin-bottom: 5px; border-radius: 8px; display: flex; align-items: center; font-size: 0.8rem; }
+        .edit-time { width: 35px; padding: 2px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.75rem; margin: 0 5px; text-align: center; }
+        .add-area { border-top: 1px solid #eee; padding-top: 8px; margin-top: auto; display: flex; flex-direction: column; gap: 5px; }
     </style>
 </head>
 <body>
-
-<div id="reminder-popup">
-    <h3 style="color:var(--primary); margin:0 0 10px 0;">🔔 TAREAS DE HOY</h3>
-    <div id="reminder-list" style="text-align:left; margin-bottom:15px;"></div>
-    <button onclick="document.getElementById('reminder-popup').classList.remove('show')" style="width:100%; padding:10px; border:none; background:var(--primary); color:white; border-radius:8px; cursor:pointer; font-weight:bold;">ENTENDIDO</button>
-</div>
-
 <div id="login-screen">
-    <h1>ZenTask Pro</h1>
-    <input type="text" id="username-input" placeholder="Tu nombre..." autocomplete="off">
-    <button onclick="login()">ENTRAR</button>
+    <h1 style="margin-bottom:20px;">RuViGesTASK</h1>
+    <input type="text" id="user-in" placeholder="Tu nombre..." autocomplete="off">
+    <button onclick="login()" style="padding:12px 25px; cursor:pointer; background:var(--dark); color:white; border:none; border-radius:8px; font-weight:bold;">ENTRAR</button>
 </div>
-
 <div id="app-content">
     <div class="controls">
-        <h2 style="margin:0">ZenTask @<span id="display-user"></span></h2>
-        <div class="nav-buttons" id="nav-container">
-            <button id="btn-week" onclick="filtrarSemana(this)">ESTA SEMANA</button>
-            <button id="btn-all" onclick="filtrarMes('all', this)">TODO EL AÑO</button>
-        </div>
-        <div class="nav-buttons" style="margin-top:10px;">
+        <h3 style="margin:0; color:var(--p);">RuViGesTASK @<span id="disp-user"></span></h3>
+        <div class="nav-buttons">
+            <button onclick="filtrarSemana(this)" id="btn-default">SEMANA</button>
+            <button onclick="toggleMeses(this)">MES</button>
+            <button onclick="filtrarTodo(this)">AÑO</button>
             <button onclick="exportarPDF()" style="background:var(--pdf); color:white;">PDF</button>
-            <button onclick="location.reload()" style="background:var(--danger); color:white;">SALIR</button>
+            <button onclick="borrarTodo()" style="background:var(--d); color:white;">BORRAR AÑO</button>
+            <button onclick="location.reload()" style="background:var(--dark); color:white;">SALIR</button>
         </div>
+        <div id="month-nav" class="month-selector"></div>
     </div>
     <div id="calendario" class="year-grid"></div>
 </div>
-
 <script>
     const URL = "https://odpeozxpgthiqhzktpaq.supabase.co/rest/v1/tasks";
     const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kcGVvenhwZ3RoaXFoemt0cGFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NjAxNzYsImV4cCI6MjA4NDMzNjE3Nn0.pdcQJGZ8FcNUn77JrOrNWkPJp-_ink9zIjkPwsbu-9U";
     let currentUser = "";
-    const mesesNom = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    const headers = { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' };
+    const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
     function login() {
-        const val = document.getElementById('username-input').value.trim();
+        const val = document.getElementById('user-in').value.trim();
         if(val) {
             currentUser = val.toLowerCase();
+            document.getElementById('disp-user').innerText = val.toUpperCase();
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
-            document.getElementById('display-user').innerText = val;
-            iniciarApp();
+            init();
         }
     }
 
-    function iniciarApp() {
-        // Generar botones de meses si no existen
-        const nav = document.getElementById('nav-container');
-        if(nav.children.length <= 2) {
-            mesesNom.forEach((m, idx) => {
-                const btn = document.createElement('button');
-                btn.innerText = m.substring(0,3).toUpperCase();
-                btn.onclick = (e) => filtrarMes(idx, e.target);
-                nav.appendChild(btn);
-            });
-        }
-
-        // Generar Calendario 2026
+    function init() {
         const grid = document.getElementById('calendario');
-        grid.innerHTML = "";
-        const fecha = new Date("2026-01-01T00:00:00");
-        while(fecha.getFullYear() === 2026) {
-            const iso = fecha.toLocaleDateString('sv-SE');
-            const card = document.createElement('div');
-            card.className = 'day-card';
-            card.dataset.date = iso;
-            card.dataset.mes = fecha.getMonth();
-            card.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <strong style="font-size:0.85rem;">${fecha.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase()}</strong>
-                    <button class="btn-clear-day" onclick="borrarDia('${iso}')">BORRAR TODO</button>
-                </div>
-                <div class="task-list" id="list-${iso}" style="flex-grow:1; margin:10px 0;"></div>
-                <div style="display:flex; gap:5px;">
-                    <input type="text" id="input-${iso}" placeholder="Tarea..." style="flex-grow:1; border:1px solid #ddd; border-radius:5px; padding:5px; font-size:0.8rem;">
-                    <button onclick="guardarTarea('${iso}')" style="background:var(--primary); color:white; border:none; border-radius:5px; width:30px; cursor:pointer;">+</button>
-                </div>`;
-            grid.appendChild(card);
-            fecha.setDate(fecha.getDate() + 1);
-        }
-        cargarTareas();
-        filtrarSemana(document.getElementById('btn-week'));
-    }
-
-    async function cargarTareas() {
-        const res = await fetch(`${URL}?name=eq.${currentUser}`, { headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}` } });
-        const tareas = await res.json();
-        
-        // Limpiar todas las listas primero
-        document.querySelectorAll('.task-list').forEach(l => l.innerHTML = '');
-        
-        const hoy = new Date().toLocaleDateString('sv-SE');
-        let hoyLista = [];
-
-        tareas.forEach(t => {
-            if(t.task_date === hoy) hoyLista.push(t.title);
-            const container = document.getElementById(`list-${t.task_date}`);
-            if(container) {
-                container.innerHTML += `<div class="task-item"><span>${t.title}</span><button onclick="eliminar(${t.id})" style="border:none; background:none; color:red; cursor:pointer;">×</button></div>`;
-            }
+        const mNav = document.getElementById('month-nav');
+        grid.innerHTML = ""; mNav.innerHTML = "";
+        meses.forEach((m, i) => {
+            const btn = document.createElement('button');
+            btn.innerText = m; btn.onclick = () => { filtrarMes(i); document.querySelectorAll('.month-selector button').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); };
+            mNav.appendChild(btn);
         });
-
-        // POPUP
-        if(hoyLista.length > 0 && !document.getElementById('reminder-popup').classList.contains('show')) {
-            document.getElementById('reminder-list').innerHTML = hoyLista.map(t => "• " + t).join('<br>');
-            setTimeout(() => document.getElementById('reminder-popup').classList.add('show'), 800);
+        let f = new Date("2026-01-01T00:00:00");
+        while(f.getFullYear() === 2026) {
+            const iso = f.toLocaleDateString('sv-SE');
+            const d = document.createElement('div');
+            d.className = 'day-card'; d.dataset.date = iso; d.dataset.mes = f.getMonth();
+            d.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;">
+                <b style="font-size:0.8rem;">${f.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'}).toUpperCase()}</b>
+                <div style="display:flex;align-items:center;gap:5px;"><span id="t-${iso}" class="day-total">0 min</span>
+                <button onclick="borrarDia('${iso}')" style="border:none;background:none;color:red;cursor:pointer;font-size:1rem;">🗑️</button></div>
+                </div><div id="l-${iso}" style="margin:8px 0;flex-grow:1;"></div>
+                <div class="add-area"><input id="i-${iso}" placeholder="Tarea..." style="padding:6px;border-radius:4px;border:1px solid #ddd;font-size:16px;">
+                <div style="display:flex;gap:3px;"><input type="number" id="m-${iso}" placeholder="Min" style="width:50px;padding:6px;border-radius:4px;border:1px solid #ddd;font-size:16px;">
+                <button onclick="add('${iso}')" style="flex-grow:1;background:var(--p);color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">OK</button></div></div>`;
+            grid.appendChild(d);
+            f.setDate(f.getDate()+1);
         }
+        load(); filtrarSemana(document.getElementById('btn-default'));
     }
 
-    async function guardarTarea(fecha) {
-        const input = document.getElementById(`input-${fecha}`);
-        const texto = input.value.trim();
-        if(!texto) return;
-
-        const res = await fetch(URL, {
-            method: 'POST',
-            headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: texto, task_date: fecha, name: currentUser, completed: false })
+    async function load() {
+        const res = await fetch(`${URL}?name=eq.${currentUser}`, { headers });
+        const data = await res.json();
+        document.querySelectorAll('[id^="l-"]').forEach(el => el.innerHTML = "");
+        document.querySelectorAll('.day-total').forEach(el => el.innerText = "0 min");
+        let sums = {};
+        data.sort((a,b)=>a.id-b.id).forEach(t => {
+            sums[t.task_date] = (sums[t.task_date] || 0) + (t.duration_minutes || 0);
+            const cont = document.getElementById(`l-${t.task_date}`);
+            if(cont) cont.innerHTML += `<div class="task-item" style="background:hsl(${Math.abs(t.title.charCodeAt(0)*50)%360},75%,90%)">
+                <span style="flex-grow:1">${t.title}</span>
+                <input type="number" value="${t.duration_minutes||0}" class="edit-time" onchange="upd(${t.id},this.value,'${t.task_date}')">
+                <button onclick="del(${t.id})" style="border:none;background:none;color:red;cursor:pointer;font-weight:bold;">×</button></div>`;
         });
-
-        if(res.ok) {
-            input.value = "";
-            cargarTareas();
-        } else {
-            alert("Error al guardar en la base de datos");
-        }
+        for(let iso in sums) { const el = document.getElementById(`t-${iso}`); if(el) el.innerText = `${sums[iso]} min`; }
     }
 
-    async function eliminar(id) {
-        await fetch(`${URL}?id=eq.${id}`, { method: 'DELETE', headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}` } });
-        cargarTareas();
+    async function add(iso) {
+        const title = document.getElementById(`i-${iso}`).value;
+        const min = document.getElementById(`m-${iso}`).value || 0;
+        if(!title) return;
+        await fetch(URL, { method:'POST', headers, body: JSON.stringify({title, task_date:iso, name:currentUser, duration_minutes:parseInt(min)})});
+        document.getElementById(`i-${iso}`).value = ""; document.getElementById(`m-${iso}`).value = "";
+        load();
     }
 
-    async function borrarDia(fecha) {
-        if(confirm("¿Borrar todas las tareas de este día?")) {
-            await fetch(`${URL}?task_date=eq.${fecha}&name=eq.${currentUser}`, { method: 'DELETE', headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}` } });
-            cargarTareas();
-        }
+    async function upd(id, val, iso) {
+        await fetch(`${URL}?id=eq.${id}`, { method:'PATCH', headers, body: JSON.stringify({duration_minutes:parseInt(val)||0})});
+        load();
     }
 
-    function filtrarMes(m, btn) {
+    async function del(id) { await fetch(`${URL}?id=eq.${id}`, { method:'DELETE', headers }); load(); }
+    async function borrarDia(iso) { if(confirm("¿Borrar día?")) { await fetch(`${URL}?task_date=eq.${iso}&name=eq.${currentUser}`, { method:'DELETE', headers }); load(); } }
+    async function borrarTodo() { if(confirm("¿BORRAR TODO EL AÑO?")) { await fetch(`${URL}?name=eq.${currentUser}`, { method:'DELETE', headers }); load(); } }
+
+    function setActive(btn) {
         document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.querySelectorAll('.day-card').forEach(c => {
-            c.classList.toggle('hidden', m !== 'all' && parseInt(c.dataset.mes) !== m);
-        });
-        window.scrollTo(0,0);
+        if(btn) btn.classList.add('active');
+        document.getElementById('month-nav').style.display = 'none';
     }
 
     function filtrarSemana(btn) {
-        if(!btn) return;
-        document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const hoy = new Date();
-        const diff = hoy.getDay() === 0 ? -6 : 1 - hoy.getDay();
-        const lunes = new Date(hoy); lunes.setDate(hoy.getDate() + diff); lunes.setHours(0,0,0,0);
-        const domingo = new Date(lunes); domingo.setDate(lunes.getDate() + 6); domingo.setHours(23,59,59,999);
+        setActive(btn);
+        const h = new Date(); const l = new Date(h);
+        l.setDate(h.getDate() + (h.getDay() === 0 ? -6 : 1 - h.getDay())); l.setHours(0,0,0,0);
+        const d = new Date(l); d.setDate(l.getDate()+6); d.setHours(23,59,59);
         document.querySelectorAll('.day-card').forEach(c => {
             const f = new Date(c.dataset.date + "T00:00:00");
-            c.classList.toggle('hidden', !(f >= lunes && f <= domingo));
+            c.classList.toggle('hidden', !(f >= l && f <= d));
         });
-        window.scrollTo(0,0);
+    }
+
+    function toggleMeses(btn) {
+        setActive(btn);
+        document.getElementById('month-nav').style.display = 'flex';
+    }
+
+    function filtrarMes(m) {
+        document.querySelectorAll('.day-card').forEach(c => c.classList.toggle('hidden', c.dataset.mes != m));
+    }
+
+    function filtrarTodo(btn) {
+        setActive(btn);
+        document.querySelectorAll('.day-card').forEach(c => c.classList.remove('hidden'));
     }
 
     function exportarPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        let y = 20;
-        doc.text(`Tareas de ${currentUser}`, 10, y);
-        y += 10;
-        document.querySelectorAll('.day-card:not(.hidden)').forEach(card => {
-            const tareas = card.querySelectorAll('.task-item span');
-            if(tareas.length > 0) {
-                if(y > 270) { doc.addPage(); y = 20; }
-                doc.text(card.querySelector('strong').innerText + ":", 10, y); y += 7;
-                tareas.forEach(t => { doc.text("- " + t.innerText, 15, y); y += 6; });
-                y += 5;
+        const { jsPDF } = window.jspdf; const doc = new jsPDF(); let y = 20;
+        doc.text(`RuViGesTASK - ${currentUser.toUpperCase()}`, 10, y); y += 10;
+        document.querySelectorAll('.day-card:not(.hidden)').forEach(c => {
+            const ts = c.querySelectorAll('.task-item');
+            if(ts.length) {
+                if(y>270){doc.addPage(); y=20;}
+                doc.text(`${c.querySelector('b').innerText}:`, 10, y); y += 7;
+                ts.forEach(t => { doc.text(`- ${t.querySelector('span').innerText} (${t.querySelector('input').value} min)`, 15, y); y += 6; });
+                y += 4;
             }
         });
-        doc.save(`ZenTask_${currentUser}.pdf`);
+        doc.save("RuViGesTASK_2026.pdf");
     }
 </script>
 </body>
