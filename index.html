@@ -6,9 +6,10 @@
     <title>ZenTask Pro 2026</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#5c67f2">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
-        :root { --primary: #5c67f2; --bg: #f4f7fe; --danger: #ef4444; --success: #22c55e; }
+        :root { --primary: #5c67f2; --bg: #f4f7fe; --danger: #ef4444; --success: #22c55e; --pdf: #10b981; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #1e293b; }
         
         /* PANTALLA DE LOGIN */
@@ -46,6 +47,7 @@
             border-radius: 8px; cursor: pointer; font-size: 0.75rem; font-weight: bold; transition: 0.2s;
         }
         .nav-buttons button.active { background: var(--primary); color: white; }
+        .btn-pdf { background: var(--pdf) !important; color: white !important; }
 
         .year-grid { 
             display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
@@ -80,7 +82,7 @@
             border-radius: 4px; padding: 2px; font-weight: bold; text-align: center; color: inherit;
         }
 
-        /* COLORES DINÁMICOS */
+        /* COLORES MATERIAS */
         .bg-programacion { background: #dcfce7 !important; border-left-color: #22c55e !important; color: #166534 !important; }
         .bg-ia { background: #ffedd5 !important; border-left-color: #f97316 !important; color: #9a3412 !important; }
         .bg-ingles { background: #fef9c3 !important; border-left-color: #eab308 !important; color: #854d0e !important; }
@@ -102,7 +104,7 @@
 <body>
 
 <div id="login-screen">
-    <h1 style="margin-bottom:10px;">ZenTask Pro</h1>
+    <h1>ZenTask Pro</h1>
     <input type="text" id="username-input" placeholder="Nombre de usuario..." autocomplete="off">
     <button onclick="login()">ENTRAR</button>
 </div>
@@ -114,6 +116,7 @@
         <div class="nav-buttons" id="meses-nav">
             <button id="btn-all" onclick="filtrarMes('all')" class="active">TODO EL AÑO</button>
             <button id="btn-week" onclick="filtrarSemana()">ESTA SEMANA</button>
+            <button class="btn-pdf" onclick="exportarPDF()">GENERAR PDF</button>
             <button onclick="location.reload()" style="background:var(--danger); color:white;">SALIR</button>
         </div>
     </div>
@@ -127,11 +130,10 @@
     let todasLasTareas = [];
     let currentUser = "";
 
-    // LOGIN PUNTO 1
     function login() {
         const val = document.getElementById('username-input').value.trim();
         if(val) {
-            currentUser = val.toLowerCase(); // Siempre minúsculas para la DB
+            currentUser = val.toLowerCase();
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
             document.getElementById('display-user').innerText = val;
@@ -143,20 +145,19 @@
         const grid = document.getElementById('calendario');
         const nav = document.getElementById('meses-nav');
         
-        // Limpiamos botones de meses para no duplicarlos si se llama varias veces
-        const existingMonthButtons = nav.querySelectorAll('.month-btn');
-        existingMonthButtons.forEach(b => b.remove());
+        // Evitar duplicar botones de meses
+        nav.querySelectorAll('.month-btn').forEach(b => b.remove());
 
         mesesNom.forEach((m, idx) => {
             const btn = document.createElement('button');
             btn.className = 'month-btn';
             btn.innerText = m.toUpperCase();
-            btn.onclick = () => filtrarMes(idx);
+            btn.onclick = (e) => filtrarMes(idx, e.target);
             nav.appendChild(btn);
         });
 
         const fechaBase = new Date("2026-01-01T00:00:00");
-        grid.innerHTML = ""; // Limpiar grid
+        grid.innerHTML = "";
 
         for (let i = 0; i < 365; i++) {
             const d = new Date(fechaBase);
@@ -173,7 +174,7 @@
                 </div>
                 <div class="task-list"></div>
                 <div class="add-zone">
-                    <input type="text" placeholder="Nueva tarea..." class="in-m" onkeypress="if(event.key==='Enter') guardar(this.nextElementSibling, '${iso}')">
+                    <input type="text" placeholder="Tarea..." class="in-m" onkeypress="if(event.key==='Enter') guardar(this.nextElementSibling, '${iso}')">
                     <button class="btn-add" onclick="guardar(this, '${iso}')">+</button>
                 </div>`;
             grid.appendChild(card);
@@ -183,7 +184,6 @@
 
     async function cargar() {
         try {
-            // Filtramos por el currentUser (PUNTO 1)
             const res = await fetch(`${URL}?name=eq.${currentUser}&select=*`, { 
                 headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY } 
             });
@@ -207,7 +207,7 @@
                         </div>`;
                 }
             });
-        } catch (e) { console.error("Error cargando tareas:", e); }
+        } catch (e) { console.error("Error:", e); }
     }
 
     function getMateriaColor(titulo) {
@@ -237,18 +237,6 @@
         });
     }
 
-    async function borrarTodoElDia(fecha) {
-        const tareasDelDia = todasLasTareas.filter(t => t.task_date === fecha);
-        if (tareasDelDia.length === 0) return;
-        if (confirm(`¿Borrar las ${tareasDelDia.length} tareas de este día?`)) {
-            await fetch(`${URL}?task_date=eq.${fecha}&name=eq.${currentUser}`, { 
-                method: 'DELETE', 
-                headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY } 
-            });
-            cargar();
-        }
-    }
-
     async function guardar(btn, fecha) {
         const card = btn.closest('.day-card');
         const materia = card.querySelector('.in-m').value;
@@ -256,46 +244,45 @@
         await fetch(URL, {
             method: 'POST',
             headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                title: materia, 
-                task_date: fecha, 
-                duration_minutes: 60, 
-                name: currentUser, // USAMOS EL NOMBRE DEL LOGIN (PUNTO 1)
-                completed: false 
-            })
+            body: JSON.stringify({ title: materia, task_date: fecha, duration_minutes: 60, name: currentUser, completed: false })
         });
         card.querySelector('.in-m').value = "";
         cargar();
     }
 
     async function eliminar(id) {
-        await fetch(`${URL}?id=eq.${id}`, { 
-            method: 'DELETE', 
-            headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY } 
-        });
+        await fetch(`${URL}?id=eq.${id}`, { method: 'DELETE', headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY } });
         cargar();
     }
 
-    function filtrarMes(m) {
+    async function borrarTodoElDia(fecha) {
+        if (confirm(`¿Borrar todo este día?`)) {
+            await fetch(`${URL}?task_date=eq.${fecha}&name=eq.${currentUser}`, { method: 'DELETE', headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY } });
+            cargar();
+        }
+    }
+
+    function filtrarMes(m, btn) {
         document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
-        if(event && event.target.tagName === 'BUTTON') event.target.classList.add('active');
+        if(btn) btn.classList.add('active');
         document.querySelectorAll('.day-card').forEach(c => {
             c.classList.toggle('hidden', m !== 'all' && parseInt(c.dataset.mes) !== m);
         });
+        window.scrollTo(0,0);
     }
 
     function filtrarSemana() {
         document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
-        if(event) event.target.classList.add('active');
+        document.getElementById('btn-week').classList.add('active');
         const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0);
-        const proximaSemana = new Date(hoy);
-        proximaSemana.setDate(hoy.getDate() + 7);
+        hoy.setHours(0,0,0,0);
+        const proxima = new Date(hoy);
+        proxima.setDate(hoy.getDate() + 7);
         document.querySelectorAll('.day-card').forEach(c => {
-            const fechaC = new Date(c.dataset.date + "T00:00:00");
-            const esEstaSemana = (fechaC >= hoy && fechaC < proximaSemana);
-            c.classList.toggle('hidden', !esEstaSemana);
+            const fC = new Date(c.dataset.date + "T00:00:00");
+            c.classList.toggle('hidden', !(fC >= hoy && fC < proxima));
         });
+        window.scrollTo(0,0);
     }
 
     function filtrarPorNombre() {
@@ -303,6 +290,37 @@
         document.querySelectorAll('.day-card').forEach(card => {
             card.classList.toggle('hidden', bus && !card.innerText.toLowerCase().includes(bus));
         });
+    }
+
+    // FUNCIÓN PDF
+    function exportarPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let y = 20;
+        doc.setFontSize(18);
+        doc.text(`ZenTask Pro - ${currentUser}`, 10, y);
+        y += 10;
+        doc.setFontSize(12);
+
+        const dias = document.querySelectorAll('.day-card:not(.hidden)');
+        dias.forEach(card => {
+            const tareas = card.querySelectorAll('.task-item');
+            if (tareas.length > 0) {
+                if (y > 275) { doc.addPage(); y = 20; }
+                doc.setFont(undefined, 'bold');
+                doc.text(card.querySelector('h3').innerText + ":", 10, y);
+                y += 7;
+                doc.setFont(undefined, 'normal');
+                tareas.forEach(t => {
+                    const txt = t.querySelector('strong').innerText;
+                    const min = t.querySelector('.time-edit').value;
+                    doc.text(`- ${txt} (${min} min)`, 15, y);
+                    y += 6;
+                });
+                y += 4;
+            }
+        });
+        doc.save(`ZenTask_${currentUser}.pdf`);
     }
 </script>
 </body>
