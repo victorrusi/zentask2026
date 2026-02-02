@@ -72,6 +72,7 @@
     }
 
     function iniciarApp() {
+        // Generar botones de meses si no existen
         const nav = document.getElementById('nav-container');
         if(nav.children.length <= 2) {
             mesesNom.forEach((m, idx) => {
@@ -82,6 +83,7 @@
             });
         }
 
+        // Generar Calendario 2026
         const grid = document.getElementById('calendario');
         grid.innerHTML = "";
         const fecha = new Date("2026-01-01T00:00:00");
@@ -94,12 +96,12 @@
             card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <strong style="font-size:0.85rem;">${fecha.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase()}</strong>
-                    <button class="btn-clear-day" onclick="borrarDia('${iso}')">BORRAR</button>
+                    <button class="btn-clear-day" onclick="borrarDia('${iso}')">BORRAR TODO</button>
                 </div>
-                <div class="task-list" style="flex-grow:1; margin:10px 0;"></div>
+                <div class="task-list" id="list-${iso}" style="flex-grow:1; margin:10px 0;"></div>
                 <div style="display:flex; gap:5px;">
-                    <input type="text" class="task-in" placeholder="Tarea..." style="flex-grow:1; border:1px solid #ddd; border-radius:5px; padding:5px; font-size:0.8rem;">
-                    <button onclick="guardar(this, '${iso}')" style="background:var(--primary); color:white; border:none; border-radius:5px; width:30px; cursor:pointer;">+</button>
+                    <input type="text" id="input-${iso}" placeholder="Tarea..." style="flex-grow:1; border:1px solid #ddd; border-radius:5px; padding:5px; font-size:0.8rem;">
+                    <button onclick="guardarTarea('${iso}')" style="background:var(--primary); color:white; border:none; border-radius:5px; width:30px; cursor:pointer;">+</button>
                 </div>`;
             grid.appendChild(card);
             fecha.setDate(fecha.getDate() + 1);
@@ -111,38 +113,45 @@
     async function cargarTareas() {
         const res = await fetch(`${URL}?name=eq.${currentUser}`, { headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}` } });
         const tareas = await res.json();
+        
+        // Limpiar todas las listas primero
         document.querySelectorAll('.task-list').forEach(l => l.innerHTML = '');
+        
         const hoy = new Date().toLocaleDateString('sv-SE');
         let hoyLista = [];
 
         tareas.forEach(t => {
             if(t.task_date === hoy) hoyLista.push(t.title);
-            const container = document.querySelector(`[data-date="${t.task_date}"] .task-list`);
+            const container = document.getElementById(`list-${t.task_date}`);
             if(container) {
                 container.innerHTML += `<div class="task-item"><span>${t.title}</span><button onclick="eliminar(${t.id})" style="border:none; background:none; color:red; cursor:pointer;">×</button></div>`;
             }
         });
 
+        // POPUP
         if(hoyLista.length > 0 && !document.getElementById('reminder-popup').classList.contains('show')) {
             document.getElementById('reminder-list').innerHTML = hoyLista.map(t => "• " + t).join('<br>');
-            setTimeout(() => document.getElementById('reminder-popup').classList.add('show'), 1000);
+            setTimeout(() => document.getElementById('reminder-popup').classList.add('show'), 800);
         }
     }
 
-    async function guardar(btn, fecha) {
-        const input = btn.previousElementSibling;
+    async function guardarTarea(fecha) {
+        const input = document.getElementById(`input-${fecha}`);
         const texto = input.value.trim();
         if(!texto) return;
 
-        try {
-            await fetch(URL, {
-                method: 'POST',
-                headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: texto, task_date: fecha, name: currentUser, completed: false })
-            });
+        const res = await fetch(URL, {
+            method: 'POST',
+            headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: texto, task_date: fecha, name: currentUser, completed: false })
+        });
+
+        if(res.ok) {
             input.value = "";
             cargarTareas();
-        } catch(e) { console.error("Error al guardar:", e); }
+        } else {
+            alert("Error al guardar en la base de datos");
+        }
     }
 
     async function eliminar(id) {
@@ -151,7 +160,7 @@
     }
 
     async function borrarDia(fecha) {
-        if(confirm("¿Borrar tareas del día?")) {
+        if(confirm("¿Borrar todas las tareas de este día?")) {
             await fetch(`${URL}?task_date=eq.${fecha}&name=eq.${currentUser}`, { method: 'DELETE', headers: { 'apikey': KEY, 'Authorization': `Bearer ${KEY}` } });
             cargarTareas();
         }
