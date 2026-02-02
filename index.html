@@ -3,187 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZenTask Pro 2026</title>
+    <title>ZenTask Pro - Reflexs52</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#5c67f2">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --primary: #5c67f2; --bg: #f4f7fe; --danger: #ef4444; --success: #22c55e; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #1e293b; }
+        :root { --primary: #5c67f2; --bg: #f4f7fe; --accent: #ff4757; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; }
         
-        #login-screen {
-            position: fixed; inset: 0; background: var(--primary); z-index: 1000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center;
-        }
-        #login-screen input { padding: 15px; border-radius: 10px; border: none; width: 80%; max-width: 280px; margin-bottom: 15px; font-size: 1.1rem; }
-        #login-screen button { padding: 12px 30px; border-radius: 10px; border: none; background: #1e293b; color: white; font-weight: bold; cursor: pointer; }
+        /* LOGIN */
+        #login-screen { position: fixed; inset: 0; background: var(--primary); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        #login-screen input { padding: 15px; border-radius: 10px; border: none; width: 250px; margin-bottom: 15px; font-size: 1rem; }
+        #login-screen button { padding: 12px 30px; border-radius: 10px; border: none; background: #1e293b; color: white; cursor: pointer; font-weight: bold; }
 
-        .controls { 
-            position: sticky; top: 0; z-index: 100; background: white; 
-            padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            display: flex; flex-direction: column; gap: 10px; align-items: center;
-        }
-        .header-title { margin: 0; color: var(--primary); font-size: 1.5rem; font-weight: 800; }
-        .user-badge { font-size: 0.8rem; background: #e2e8f0; padding: 4px 12px; border-radius: 20px; color: var(--primary); }
-        
-        .search-bar { width: 100%; max-width: 600px; }
-        .search-bar input { width: 100%; padding: 10px 20px; border: 2px solid #e2e8f0; border-radius: 30px; outline: none; box-sizing: border-box; }
-        
-        .nav-buttons { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; max-width: 800px; }
-        .nav-buttons button { background: #f1f5f9; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; font-weight: bold; transition: 0.2s; }
+        /* CONTROLES */
+        .controls { position: sticky; top: 0; z-index: 100; background: white; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .nav-buttons { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
+        .nav-buttons button { background: #f1f5f9; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
         .nav-buttons button.active { background: var(--primary); color: white; }
+        
+        .btn-pdf { background: #10b981 !important; color: white !important; }
+        .btn-exit { background: var(--accent) !important; color: white !important; }
 
+        /* GRID Y CARDS */
         .year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
-        .day-card { background: white; border-radius: 15px; padding: 15px; border-top: 5px solid var(--primary); display: flex; flex-direction: column; min-height: 350px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .day-card { background: white; border-radius: 15px; padding: 15px; border-top: 5px solid var(--primary); min-height: 300px; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .task-item { background: #f8fafc; padding: 10px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #cbd5e1; font-size: 0.9rem; }
+        .task-done { opacity: 0.5; background: #e2e8f0; text-decoration: line-through; }
         
-        .task-item { background: #f8fafc; padding: 10px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #cbd5e1; }
-        .task-done { background: #e2e8f0 !important; border-left-color: #94a3b8 !important; opacity: 0.6; }
-        .task-done strong { text-decoration: line-through; }
+        /* POPUP DE RECORDATORIO */
+        #reminder-popup { 
+            position: fixed; top: 20px; right: 20px; left: 20px; background: #1e293b; color: white; 
+            padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+            z-index: 3000; transform: translateY(-150%); transition: 0.5s; 
+        }
+        #reminder-popup.show { transform: translateY(0); }
+        #reminder-popup button { margin-top: 10px; background: var(--primary); border: none; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; }
 
-        .bg-programacion { background: #dcfce7 !important; border-left-color: #22c55e !important; color: #166534 !important; }
-        .bg-ia { background: #ffedd5 !important; border-left-color: #f97316 !important; color: #9a3412 !important; }
-        .bg-ingles { background: #fef9c3 !important; border-left-color: #eab308 !important; color: #854d0e !important; }
-        .bg-linux { background: #f3e8ff !important; border-left-color: #a855f7 !important; color: #6b21a8 !important; }
-
-        .add-zone { margin-top: auto; padding-top: 10px; display: flex; gap: 5px; }
-        .add-zone input { flex-grow: 1; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; }
-        .btn-add { background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
-        
         .hidden { display: none !important; }
-        .logout-link { font-size: 0.65rem; color: #ef4444; cursor: pointer; text-decoration: underline; margin-top: 5px; border: none; background: none; }
     </style>
 </head>
 <body>
 
+<div id="reminder-popup">
+    <strong style="color: #5c67f2;">🔔 Tareas para hoy:</strong>
+    <div id="reminder-list" style="margin-top:10px; font-size: 0.9rem;"></div>
+    <button onclick="cerrarPopup()">ENTENDIDO</button>
+</div>
+
 <div id="login-screen">
-    <h1>ZenTask 2026</h1>
-    <input type="text" id="username-input" placeholder="Nombre de usuario..." onkeypress="if(event.key==='Enter') login()">
+    <h1>ZenTask Pro</h1>
+    <input type="text" id="username-input" placeholder="Usuario (ej: Reflexs52)">
     <button onclick="login()">ENTRAR</button>
 </div>
 
 <div id="app-content" class="hidden">
     <div class="controls">
-        <h1 class="header-title">ZenTask <span id="display-user" class="user-badge"></span></h1>
-        <div class="search-bar"><input type="search" id="busqueda" placeholder="🔍 Buscar..." oninput="filtrarPorNombre()"></div>
+        <h2 style="margin:0; color:var(--primary);">ZenTask @<span id="display-user"></span></h2>
         <div class="nav-buttons" id="meses-nav">
-            <button onclick="filtrarMes('all', this)" class="active">TODO EL AÑO</button>
-            <button onclick="filtrarSemana(this)">ESTA SEMANA</button>
-            </div>
-        <button onclick="logout()" class="logout-link">Cambiar de usuario</button>
+            <button onclick="filtrarMes('all', this)" class="active">AÑO</button>
+            <button onclick="filtrarSemana(this)">SEMANA</button>
+            <button onclick="exportarPDF()" class="btn-pdf">📄 PDF</button>
+            <button onclick="cerrarApp()" class="btn-exit">✖ SALIR</button>
+        </div>
     </div>
-    <div class="year-grid" id="calendario"></div>
+    <div id="calendario" class="year-grid"></div>
 </div>
 
 <script>
     const URL = "https://odpeozxpgthiqhzktpaq.supabase.co/rest/v1/tasks";
     const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kcGVvenhwZ3RoaXFoemt0cGFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NjAxNzYsImV4cCI6MjA4NDMzNjE3Nn0.pdcQJGZ8FcNUn77JrOrNWkPJp-_ink9zIjkPwsbu-9U";
-    const mesesNom = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
     let currentUser = localStorage.getItem('zentask_user') || "";
+    let tareasCargadas = [];
+
+    function getHeaders() {
+        return {
+            'apikey': KEY,
+            'Authorization': 'Bearer ' + KEY,
+            'Content-Type': 'application/json',
+            'x-user-name': currentUser.toLowerCase()
+        };
+    }
 
     function login() {
         const user = document.getElementById('username-input').value.trim();
-        if(user) { currentUser = user; localStorage.setItem('zentask_user', user); mostrarApp(); }
+        if(user) { 
+            currentUser = user; 
+            localStorage.setItem('zentask_user', user); 
+            location.reload(); 
+        }
     }
 
-    function logout() { localStorage.removeItem('zentask_user'); location.reload(); }
-
-    function mostrarApp() {
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('app-content').classList.remove('hidden');
-        document.getElementById('display-user').innerText = "@" + currentUser;
-        
-        // Cargar botones de meses si no están
-        const nav = document.getElementById('meses-nav');
-        if(nav.children.length <= 2) {
-            mesesNom.forEach((m, idx) => {
-                nav.innerHTML += `<button onclick="filtrarMes(${idx}, this)">${m.toUpperCase()}</button>`;
-            });
+    function cerrarApp() {
+        if(confirm("¿Quieres cerrar la sesión y salir?")) {
+            localStorage.removeItem('zentask_user');
+            // Intentar cerrar la pestaña (solo funciona si se instaló como PWA o se abrió por script)
+            window.close();
+            // Si no se cierra, recargamos para volver al login
+            location.reload();
         }
-        iniciar();
+    }
+
+    async function cargar() {
+        document.querySelectorAll('.task-list').forEach(l => l.innerHTML = '');
+        const res = await fetch(URL, { headers: getHeaders() });
+        tareasCargadas = await res.json();
+        
+        const hoy = new Date().toISOString().split('T')[0];
+        const tareasHoy = [];
+
+        tareasCargadas.forEach(t => {
+            if(t.task_date === hoy && !t.completed) tareasHoy.push(t.title);
+
+            const contenedor = document.querySelector(`[data-date="${t.task_date}"] .task-list`);
+            if (contenedor) {
+                contenedor.innerHTML += `
+                    <div class="task-item ${t.completed ? 'task-done' : ''}">
+                        <span>${t.title}</span>
+                        <div style="display:flex; gap:10px;">
+                            <button onclick="toggleCheck(${t.id}, ${t.completed})" style="border:none; background:none; cursor:pointer;">${t.completed ? '✅' : '⬜'}</button>
+                            <button onclick="eliminar(${t.id})" style="border:none; background:none; color:red; cursor:pointer;">×</button>
+                        </div>
+                    </div>`;
+            }
+        });
+
+        if(tareasHoy.length > 0) mostrarRecordatorio(tareasHoy);
+    }
+
+    function mostrarRecordatorio(lista) {
+        const div = document.getElementById('reminder-list');
+        div.innerHTML = lista.map(t => `• ${t}`).join('<br>');
+        document.getElementById('reminder-popup').classList.add('show');
+    }
+
+    function cerrarPopup() {
+        document.getElementById('reminder-popup').classList.remove('show');
+    }
+
+    async function guardar(btn, fecha) {
+        const input = btn.previousElementSibling;
+        if(!input.value) return;
+        await fetch(URL, {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify({ title: input.value, task_date: fecha, name: currentUser.toLowerCase(), completed: false })
+        });
+        input.value = "";
+        cargar();
+    }
+
+    async function toggleCheck(id, estado) {
+        await fetch(`${URL}?id=eq.${id}`, { method: 'PATCH', headers: getHeaders(), body: JSON.stringify({ completed: !estado }) });
+        cargar();
+    }
+
+    async function eliminar(id) {
+        if(!confirm("¿Eliminar tarea?")) return;
+        await fetch(`${URL}?id=eq.${id}`, { method: 'DELETE', headers: getHeaders() });
+        cargar();
+    }
+
+    function exportarPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text(`Tareas de @${currentUser}`, 20, 20);
+        let y = 30;
+        tareasCargadas.forEach(t => {
+            doc.text(`${t.task_date}: ${t.title} (${t.completed ? 'OK' : 'PENDIENTE'})`, 20, y);
+            y += 10;
+        });
+        doc.save('zentask_reflexs52.pdf');
     }
 
     function iniciar() {
         const grid = document.getElementById('calendario');
-        grid.innerHTML = "";
         const fechaBase = new Date("2026-01-01T00:00:00");
+        const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+        
+        const nav = document.getElementById('meses-nav');
+        meses.forEach((m, i) => {
+            const btn = document.createElement('button');
+            btn.innerText = m;
+            btn.onclick = (e) => filtrarMes(i, e.target);
+            nav.insertBefore(btn, document.querySelector('.btn-pdf'));
+        });
+
         for (let i = 0; i < 365; i++) {
             const d = new Date(fechaBase); d.setDate(fechaBase.getDate() + i);
             const iso = d.toISOString().split('T')[0];
             grid.innerHTML += `
                 <div class="day-card" data-date="${iso}" data-mes="${d.getMonth()}">
-                    <h3 style="margin:0; font-size:1rem;">${d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' }).toUpperCase()} <small>${mesesNom[d.getMonth()]}</small></h3>
+                    <strong style="color:var(--primary)">${d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' })} ${meses[d.getMonth()]}</strong>
                     <div class="task-list" style="margin-top:10px; flex-grow:1;"></div>
-                    <div class="add-zone">
-                        <input type="text" placeholder="Tarea..." class="in-m" onkeypress="if(event.key==='Enter') guardar(this.nextElementSibling, '${iso}')">
-                        <button class="btn-add" onclick="guardar(this, '${iso}')">+</button>
+                    <div style="margin-top:auto; display:flex; gap:5px; padding-top:10px;">
+                        <input type="text" placeholder="..." style="width:70%; border-radius:5px; border:1px solid #ddd; padding:5px;">
+                        <button onclick="guardar(this, '${iso}')" style="background:var(--primary); color:white; border:none; border-radius:15px; width:30px; height:30px; cursor:pointer;">+</button>
                     </div>
                 </div>`;
         }
         cargar();
     }
 
-    async function cargar() {
-        document.querySelectorAll('.task-list').forEach(l => l.innerHTML = '');
-        const res = await fetch(`${URL}?name=eq.${currentUser}`, { headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY } });
-        const tareas = await res.json();
-        
-        tareas.forEach(t => {
-            const contenedor = document.querySelector(`[data-date="${t.task_date}"] .task-list`);
-            if (contenedor) {
-                let colorClase = t.completed ? 'task-done' : getMateriaColor(t.title);
-                contenedor.innerHTML += `
-                    <div class="task-item ${colorClase}">
-                        <strong style="font-size:0.85rem;">${t.title}</strong>
-                        <div style="display:flex; gap:5px;">
-                            <button onclick="toggleCheck(${t.id}, ${t.completed})" style="border:none; background:none; cursor:pointer;">${t.completed ? '✅' : '⬜'}</button>
-                            <button onclick="eliminar(${t.id})" style="border:none; background:none; color:#cbd5e1; cursor:pointer;">×</button>
-                        </div>
-                    </div>`;
-            }
-        });
-    }
-
-    function getMateriaColor(titulo) {
-        const t = titulo.toLowerCase();
-        if (t.includes('progra')) return 'bg-programacion';
-        if (t.includes('ia') || t.includes('intel')) return 'bg-ia';
-        if (t.includes('ingl')) return 'bg-ingles';
-        if (t.includes('linux')) return 'bg-linux';
-        return '';
-    }
-
-    async function guardar(btn, fecha) {
-        const card = btn.closest('.day-card');
-        const materia = card.querySelector('.in-m').value;
-        if(!materia) return;
-        await fetch(URL, {
-            method: 'POST',
-            headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: materia, task_date: fecha, duration_minutes: 60, name: currentUser, completed: false })
-        });
-        card.querySelector('.in-m').value = "";
-        cargar();
-    }
-
-    async function toggleCheck(id, estado) {
-        await fetch(`${URL}?id=eq.${id}`, { method: 'PATCH', headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ completed: !estado }) });
-        cargar();
-    }
-
-    async function eliminar(id) {
-        if(!confirm("¿Eliminar?")) return;
-        await fetch(`${URL}?id=eq.${id}`, { method: 'DELETE', headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY } });
-        cargar();
-    }
-
     function filtrarMes(m, btn) {
-        activarBoton(btn);
+        document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
         document.querySelectorAll('.day-card').forEach(c => {
             c.classList.toggle('hidden', m !== 'all' && parseInt(c.dataset.mes) !== m);
         });
     }
 
     function filtrarSemana(btn) {
-        activarBoton(btn);
+        document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
         const hoy = new Date(); hoy.setHours(0,0,0,0);
         const fin = new Date(hoy); fin.setDate(hoy.getDate() + 7);
         document.querySelectorAll('.day-card').forEach(c => {
@@ -192,19 +223,12 @@
         });
     }
 
-    function activarBoton(btn) {
-        document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+    if(currentUser) {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('app-content').classList.remove('hidden');
+        document.getElementById('display-user').innerText = currentUser;
+        iniciar();
     }
-
-    function filtrarPorNombre() {
-        const bus = document.getElementById('busqueda').value.toLowerCase();
-        document.querySelectorAll('.day-card').forEach(card => {
-            card.classList.toggle('hidden', bus && !card.innerText.toLowerCase().includes(bus));
-        });
-    }
-
-    if(currentUser) mostrarApp();
 </script>
 </body>
 </html>
