@@ -12,96 +12,54 @@
         :root { --primary: #5c67f2; --bg: #f4f7fe; --danger: #ef4444; --success: #22c55e; --pdf: #10b981; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #1e293b; }
         
-        /* PANTALLA DE LOGIN */
-        #login-screen { 
-            position: fixed; inset: 0; background: var(--primary); z-index: 2000; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; 
+        /* POPUP DE RECORDATORIO */
+        #reminder-popup {
+            position: fixed; top: -400px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 400px; background: #1e293b; color: white;
+            padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 3000; transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
         }
-        #login-screen input { 
-            padding: 15px; border-radius: 10px; border: none; width: 260px; 
-            margin-bottom: 15px; text-align: center; font-size: 1rem; outline: none; 
-        }
-        #login-screen button { 
-            padding: 12px 35px; border-radius: 10px; border: none; background: #1e293b; 
-            color: white; cursor: pointer; font-weight: bold; 
-        }
+        #reminder-popup.show { top: 20px; }
+        #reminder-popup strong { color: #5c67f2; font-size: 1.2rem; display: block; margin-bottom: 10px; }
+        #reminder-list { text-align: left; font-size: 0.9rem; margin-bottom: 15px; }
 
+        /* ESTILOS GENERALES */
+        #login-screen { position: fixed; inset: 0; background: var(--primary); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        #login-screen input { padding: 15px; border-radius: 10px; border: none; width: 260px; margin-bottom: 15px; text-align: center; font-size: 1rem; outline: none; }
+        #login-screen button { padding: 12px 35px; border-radius: 10px; border: none; background: #1e293b; color: white; cursor: pointer; font-weight: bold; }
         #app-content { display: none; }
-
-        .controls { 
-            position: sticky; top: 0; z-index: 100; background: white; 
-            padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            display: flex; flex-direction: column; gap: 10px; align-items: center;
-        }
+        .controls { position: sticky; top: 0; z-index: 100; background: white; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 10px; align-items: center; }
         .header-title { margin: 0; color: var(--primary); font-size: 1.8rem; font-weight: 800; }
-        
-        .search-bar { width: 100%; max-width: 600px; }
-        .search-bar input { 
-            width: 100%; padding: 12px 20px; border: 2px solid #e2e8f0; 
-            border-radius: 30px; outline: none; font-size: 1rem; transition: 0.3s;
-        }
-
         .nav-buttons { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
-        .nav-buttons button { 
-            background: #f1f5f9; color: #475569; border: none; padding: 8px 14px; 
-            border-radius: 8px; cursor: pointer; font-size: 0.75rem; font-weight: bold; transition: 0.2s;
-        }
+        .nav-buttons button { background: #f1f5f9; color: #475569; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
         .nav-buttons button.active { background: var(--primary); color: white; }
-        .btn-pdf { background: var(--pdf) !important; color: white !important; }
-
-        .year-grid { 
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 20px; padding: 20px; max-width: 1600px; margin: 0 auto;
-        }
-
-        .day-card { 
-            background: white; border-radius: 15px; padding: 20px; 
-            border-top: 5px solid var(--primary); display: flex; flex-direction: column;
-            min-height: 380px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: 0.3s;
-        }
-
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
-        .card-header h3 { margin: 0; font-size: 1.1rem; color: #334155; }
-        .btn-clear-day { 
-            background: #fee2e2; color: #ef4444; border: none; padding: 4px 8px; 
-            border-radius: 5px; font-size: 0.65rem; cursor: pointer; font-weight: bold;
-        }
-
+        .year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; max-width: 1600px; margin: 0 auto; }
+        .day-card { background: white; border-radius: 15px; padding: 20px; border-top: 5px solid var(--primary); display: flex; flex-direction: column; min-height: 380px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .task-list { flex-grow: 1; }
-        .task-item { 
-            background: #f8fafc; padding: 10px; margin-bottom: 8px; 
-            border-radius: 8px; display: flex; justify-content: space-between; align-items: center;
-            border-left: 5px solid #cbd5e1;
-        }
-
+        .task-item { background: #f8fafc; padding: 10px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #cbd5e1; }
         .task-done { background: #e2e8f0 !important; border-left-color: #94a3b8 !important; opacity: 0.6; }
-        .task-done strong { text-decoration: line-through; color: #64748b; }
-
-        .time-edit { 
-            width: 45px; border: none; background: rgba(255,255,255,0.5); 
-            border-radius: 4px; padding: 2px; font-weight: bold; text-align: center; color: inherit;
-        }
-
+        .time-edit { width: 45px; border: none; background: rgba(255,255,255,0.5); border-radius: 4px; padding: 2px; font-weight: bold; text-align: center; }
+        .add-zone { margin-top: auto; padding-top: 15px; display: flex; gap: 5px; }
+        .add-zone input { flex-grow: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; }
+        .btn-add { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .hidden { display: none !important; }
+        
         /* COLORES MATERIAS */
         .bg-programacion { background: #dcfce7 !important; border-left-color: #22c55e !important; color: #166534 !important; }
         .bg-ia { background: #ffedd5 !important; border-left-color: #f97316 !important; color: #9a3412 !important; }
         .bg-ingles { background: #fef9c3 !important; border-left-color: #eab308 !important; color: #854d0e !important; }
         .bg-hardware { background: #dbeafe !important; border-left-color: #3b82f6 !important; color: #1e40af !important; }
         .bg-linux { background: #f3e8ff !important; border-left-color: #a855f7 !important; color: #6b21a8 !important; }
-
-        .actions { display: flex; gap: 8px; align-items: center; }
-        .btn-check { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.1rem; }
-        .btn-check.done { color: var(--success); }
-        .btn-delete { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 1.2rem; }
-
-        .add-zone { margin-top: auto; padding-top: 15px; display: flex; gap: 5px; }
-        .add-zone input { flex-grow: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; }
-        .btn-add { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        
-        .hidden { display: none !important; }
     </style>
 </head>
 <body>
+
+<div id="reminder-popup">
+    <strong>🔔 Tareas para hoy</strong>
+    <div id="reminder-list"></div>
+    <button onclick="document.getElementById('reminder-popup').classList.remove('show')" style="width:100%; padding:10px; border:none; border-radius:8px; background:var(--primary); color:white; font-weight:bold; cursor:pointer;">¡ENTENDIDO!</button>
+</div>
 
 <div id="login-screen">
     <h1>ZenTask Pro</h1>
@@ -112,11 +70,10 @@
 <div id="app-content">
     <div class="controls">
         <h1 class="header-title">ZenTask Pro @<span id="display-user"></span></h1>
-        <div class="search-bar"><input type="search" id="busqueda" placeholder="🔍 Buscar materia..." oninput="filtrarPorNombre()"></div>
         <div class="nav-buttons" id="meses-nav">
-            <button id="btn-all" onclick="filtrarMes('all')" class="active">TODO EL AÑO</button>
-            <button id="btn-week" onclick="filtrarSemana()">ESTA SEMANA</button>
-            <button class="btn-pdf" onclick="exportarPDF()">GENERAR PDF</button>
+            <button id="btn-all" onclick="filtrarMes('all')" class="active">AÑO</button>
+            <button id="btn-week" onclick="filtrarSemana()">SEMANA</button>
+            <button onclick="exportarPDF()" style="background:var(--pdf); color:white;">PDF</button>
             <button onclick="location.reload()" style="background:var(--danger); color:white;">SALIR</button>
         </div>
     </div>
@@ -144,122 +101,87 @@
     function iniciar() {
         const grid = document.getElementById('calendario');
         const nav = document.getElementById('meses-nav');
-        
-        // Evitar duplicar botones de meses
         nav.querySelectorAll('.month-btn').forEach(b => b.remove());
-
         mesesNom.forEach((m, idx) => {
             const btn = document.createElement('button');
             btn.className = 'month-btn';
-            btn.innerText = m.toUpperCase();
+            btn.innerText = m.substring(0,3).toUpperCase();
             btn.onclick = (e) => filtrarMes(idx, e.target);
             nav.appendChild(btn);
         });
 
         const fechaBase = new Date("2026-01-01T00:00:00");
         grid.innerHTML = "";
-
         for (let i = 0; i < 365; i++) {
-            const d = new Date(fechaBase);
-            d.setDate(fechaBase.getDate() + i);
+            const d = new Date(fechaBase); d.setDate(fechaBase.getDate() + i);
             const iso = d.toISOString().split('T')[0];
-            const card = document.createElement('div');
-            card.className = 'day-card';
-            card.dataset.date = iso;
-            card.dataset.mes = d.getMonth();
-            card.innerHTML = `
-                <div class="card-header">
+            grid.innerHTML += `
+                <div class="day-card" data-date="${iso}" data-mes="${d.getMonth()}">
                     <h3>${d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' }).toUpperCase()} <small>${mesesNom[d.getMonth()]}</small></h3>
-                    <button class="btn-clear-day" onclick="borrarTodoElDia('${iso}')">BORRAR TODO</button>
-                </div>
-                <div class="task-list"></div>
-                <div class="add-zone">
-                    <input type="text" placeholder="Tarea..." class="in-m" onkeypress="if(event.key==='Enter') guardar(this.nextElementSibling, '${iso}')">
-                    <button class="btn-add" onclick="guardar(this, '${iso}')">+</button>
+                    <div class="task-list"></div>
+                    <div class="add-zone">
+                        <input type="text" placeholder="Tarea..." class="in-m" onkeypress="if(event.key==='Enter') guardar(this.nextElementSibling, '${iso}')">
+                        <button class="btn-add" onclick="guardar(this, '${iso}')">+</button>
+                    </div>
                 </div>`;
-            grid.appendChild(card);
         }
         cargar();
     }
 
     async function cargar() {
         try {
-            const res = await fetch(`${URL}?name=eq.${currentUser}&select=*`, { 
-                headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY } 
-            });
+            const res = await fetch(`${URL}?name=eq.${currentUser}&select=*`, { headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY } });
             todasLasTareas = await res.json();
             document.querySelectorAll('.task-list').forEach(l => l.innerHTML = '');
             
+            const hoy = new Date().toISOString().split('T')[0];
+            let tareasDeHoy = [];
+
             todasLasTareas.forEach(t => {
+                if(t.task_date === hoy) tareasDeHoy.push(t.title);
                 const contenedor = document.querySelector(`[data-date="${t.task_date}"] .task-list`);
                 if (contenedor) {
                     let colorClase = t.completed ? 'task-done' : getMateriaColor(t.title);
                     contenedor.innerHTML += `
                         <div class="task-item ${colorClase}">
-                            <div>
-                                <strong>${t.title}</strong>
-                                <span>⏱️ <input type="number" class="time-edit" value="${t.duration_minutes}" onchange="actualizarTiempo(${t.id}, this.value)"> min</span>
-                            </div>
-                            <div class="actions">
-                                <button class="btn-check ${t.completed ? 'done' : ''}" onclick="toggleCheck(${t.id}, ${t.completed})">✔</button>
-                                <button class="btn-delete" onclick="eliminar(${t.id})">×</button>
-                            </div>
+                            <div><strong>${t.title}</strong> <span>${t.duration_minutes}m</span></div>
+                            <button onclick="eliminar(${t.id})" style="border:none; background:none; color:red; cursor:pointer;">×</button>
                         </div>`;
                 }
             });
-        } catch (e) { console.error("Error:", e); }
+
+            // PUNTO CRÍTICO: SOLO SI HAY TAREAS HOY PARA ESTE USUARIO
+            if(tareasDeHoy.length > 0) {
+                document.getElementById('reminder-list').innerHTML = tareasDeHoy.map(t => "• " + t).join('<br>');
+                setTimeout(() => document.getElementById('reminder-popup').classList.add('show'), 500);
+            }
+
+        } catch (e) { console.error(e); }
     }
 
     function getMateriaColor(titulo) {
         const t = titulo.toLowerCase();
         if (t.includes('progra')) return 'bg-programacion';
-        if (t.includes('ia') || t.includes('intel')) return 'bg-ia';
+        if (t.includes('ia')) return 'bg-ia';
         if (t.includes('ingl')) return 'bg-ingles';
-        if (t.includes('hard') || t.includes('sist')) return 'bg-hardware';
-        if (t.includes('linux')) return 'bg-linux';
         return '';
     }
 
-    async function toggleCheck(id, estadoActual) {
-        await fetch(`${URL}?id=eq.${id}`, {
-            method: 'PATCH',
-            headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ completed: !estadoActual })
-        });
-        cargar();
-    }
-
-    async function actualizarTiempo(id, nuevoTiempo) {
-        await fetch(`${URL}?id=eq.${id}`, {
-            method: 'PATCH',
-            headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ duration_minutes: parseInt(nuevoTiempo) })
-        });
-    }
-
     async function guardar(btn, fecha) {
-        const card = btn.closest('.day-card');
-        const materia = card.querySelector('.in-m').value;
-        if(!materia) return;
+        const val = btn.previousElementSibling.value;
+        if(!val) return;
         await fetch(URL, {
             method: 'POST',
             headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: materia, task_date: fecha, duration_minutes: 60, name: currentUser, completed: false })
+            body: JSON.stringify({ title: val, task_date: fecha, duration_minutes: 60, name: currentUser, completed: false })
         });
-        card.querySelector('.in-m').value = "";
+        btn.previousElementSibling.value = "";
         cargar();
     }
 
     async function eliminar(id) {
         await fetch(`${URL}?id=eq.${id}`, { method: 'DELETE', headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY } });
         cargar();
-    }
-
-    async function borrarTodoElDia(fecha) {
-        if (confirm(`¿Borrar todo este día?`)) {
-            await fetch(`${URL}?task_date=eq.${fecha}&name=eq.${currentUser}`, { method: 'DELETE', headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY } });
-            cargar();
-        }
     }
 
     function filtrarMes(m, btn) {
@@ -274,10 +196,8 @@
     function filtrarSemana() {
         document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
         document.getElementById('btn-week').classList.add('active');
-        const hoy = new Date();
-        hoy.setHours(0,0,0,0);
-        const proxima = new Date(hoy);
-        proxima.setDate(hoy.getDate() + 7);
+        const hoy = new Date(); hoy.setHours(0,0,0,0);
+        const proxima = new Date(hoy); proxima.setDate(hoy.getDate() + 7);
         document.querySelectorAll('.day-card').forEach(c => {
             const fC = new Date(c.dataset.date + "T00:00:00");
             c.classList.toggle('hidden', !(fC >= hoy && fC < proxima));
@@ -285,42 +205,20 @@
         window.scrollTo(0,0);
     }
 
-    function filtrarPorNombre() {
-        const bus = document.getElementById('busqueda').value.toLowerCase();
-        document.querySelectorAll('.day-card').forEach(card => {
-            card.classList.toggle('hidden', bus && !card.innerText.toLowerCase().includes(bus));
-        });
-    }
-
-    // FUNCIÓN PDF
     function exportarPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        let y = 20;
-        doc.setFontSize(18);
-        doc.text(`ZenTask Pro - ${currentUser}`, 10, y);
-        y += 10;
-        doc.setFontSize(12);
-
-        const dias = document.querySelectorAll('.day-card:not(.hidden)');
-        dias.forEach(card => {
-            const tareas = card.querySelectorAll('.task-item');
-            if (tareas.length > 0) {
-                if (y > 275) { doc.addPage(); y = 20; }
-                doc.setFont(undefined, 'bold');
-                doc.text(card.querySelector('h3').innerText + ":", 10, y);
-                y += 7;
-                doc.setFont(undefined, 'normal');
-                tareas.forEach(t => {
-                    const txt = t.querySelector('strong').innerText;
-                    const min = t.querySelector('.time-edit').value;
-                    doc.text(`- ${txt} (${min} min)`, 15, y);
-                    y += 6;
-                });
-                y += 4;
+        doc.text(`ZenTask - ${currentUser}`, 10, 20);
+        let y = 30;
+        document.querySelectorAll('.day-card:not(.hidden)').forEach(card => {
+            const tareas = card.querySelectorAll('.task-item strong');
+            if(tareas.length > 0) {
+                doc.text(card.querySelector('h3').innerText + ":", 10, y); y += 10;
+                tareas.forEach(t => { doc.text("- " + t.innerText, 15, y); y += 7; });
+                y += 5;
             }
         });
-        doc.save(`ZenTask_${currentUser}.pdf`);
+        doc.save(`Tareas_${currentUser}.pdf`);
     }
 </script>
 </body>
