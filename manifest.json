@@ -1,6 +1,6 @@
 {
-  "name": "ZenTask Pro 2026",
-  "short_name": "ZenTask",
+  "name": "RuViGesTASK 2026",
+  "short_name": "RuViGesTASK 2026",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#f4f7fe",
@@ -14,3 +14,4 @@
   ]
 
 }
+
