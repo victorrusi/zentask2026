@@ -1,184 +1,104 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>RuViGesTASK 2026</title>
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="RuViGesTASK">
-    <meta name="apple-mobile-web-app-title" content="RuViGesTASK">
-    <meta name="theme-color" content="#5c67f2">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        :root { --p: #5c67f2; --bg: #f4f7fe; --d: #ef4444; --pdf: #10b981; --dark: #1e293b; --a: #ff9f43; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; -webkit-tap-highlight-color: transparent; }
-        #login-screen { position: fixed; inset: 0; background: var(--p); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        #login-screen input { padding: 12px; border-radius: 8px; border: none; width: 220px; margin-bottom: 10px; text-align: center; font-size: 16px; }
-        #app-content { display: none; }
-        .controls { position: sticky; top: 0; z-index: 100; background: white; padding: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
-        .nav-buttons { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 5px; }
-        .nav-buttons button { padding: 8px 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.7rem; background: #e2e8f0; color: #1e293b; }
-        .nav-buttons button.active { background: var(--p); color: white; }
-        .month-selector { display: none; justify-content: center; gap: 3px; margin-top: 10px; flex-wrap: wrap; }
-        .year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; padding: 12px; }
-        .day-card { background: white; border-radius: 12px; padding: 12px; border-top: 4px solid var(--p); display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .hidden { display: none !important; }
-        .day-total { font-size: 0.7rem; background: var(--a); color: white; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
-        .task-item { padding: 6px 10px; margin-bottom: 5px; border-radius: 8px; display: flex; align-items: center; font-size: 0.8rem; }
-        .edit-time { width: 35px; padding: 2px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.75rem; margin: 0 5px; text-align: center; }
-        .add-area { border-top: 1px solid #eee; padding-top: 8px; margin-top: auto; display: flex; flex-direction: column; gap: 5px; }
-    </style>
+  <meta charset="UTF-8">
+  <title>ZenTask Pro 2026</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#5c67f2">
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root { --p: #5c67f2; --bg: #f4f7fe; --d: #ef4444; --pdf: #10b981; --dark: #1e293b; --a: #ff9f43; }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; -webkit-tap-highlight-color: transparent; }
+    #login-screen { position: fixed; inset: 0; background: var(--p); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
+    #login-screen input { padding: 12px; border-radius: 8px; border: none; width: 220px; margin-bottom: 10px; text-align: center; font-size: 16px; }
+    #app-content { display: none; }
+    .controls { position: sticky; top: 0; z-index: 100; background: white; padding: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+    .nav-buttons { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 5px; }
+    .nav-buttons button { padding: 8px 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.7rem; background: #e2e8f0; color: #1e293b; }
+    .nav-buttons button.active { background: var(--p); color: white; }
+    .month-selector { display: none; justify-content: center; gap: 3px; margin-top: 10px; flex-wrap: wrap; }
+    .year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; padding: 12px; }
+    .day-card { background: white; border-radius: 12px; padding: 12px; border-top: 4px solid var(--p); display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .hidden { display: none !important; }
+    .day-total { font-size: 0.7rem; background: var(--a); color: white; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
+    .task-item { padding: 6px 10px; margin-bottom: 5px; border-radius: 8px; display: flex; align-items: center; font-size: 0.8rem; }
+    .edit-time { width: 35px; padding: 2px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.75rem; margin: 0 5px; text-align: center; }
+    .add-area { border-top: 1px solid #eee; padding-top: 8px; margin-top: auto; display: flex; flex-direction: column; gap: 5px; }
+  </style>
 </head>
 <body>
 <div id="login-screen">
-    <h1 style="margin-bottom:20px;">RuViGesTASK</h1>
-    <input type="text" id="user-in" placeholder="Tu nombre..." autocomplete="off">
-    <button onclick="login()" style="padding:12px 25px; cursor:pointer; background:var(--dark); color:white; border:none; border-radius:8px; font-weight:bold;">ENTRAR</button>
+  <h1 style="margin-bottom:20px;">ZenTask Pro</h1>
+  <input type="text" id="user-in" placeholder="Tu nombre..." autocomplete="off">
+  <button onclick="login()" style="padding:12px 25px; cursor:pointer; background:var(--dark); color:white; border:none; border-radius:8px; font-weight:bold;">ENTRAR</button>
 </div>
 <div id="app-content">
-    <div class="controls">
-        <h3 style="margin:0; color:var(--p);">RuViGesTASK @<span id="disp-user"></span></h3>
-        <div class="nav-buttons">
-            <button onclick="filtrarSemana(this)" id="btn-default">SEMANA</button>
-            <button onclick="toggleMeses(this)">MES</button>
-            <button onclick="filtrarTodo(this)">AÑO</button>
-            <button onclick="exportarPDF()" style="background:var(--pdf); color:white;">PDF</button>
-            <button onclick="borrarTodo()" style="background:var(--d); color:white;">BORRAR AÑO</button>
-            <button onclick="location.reload()" style="background:var(--dark); color:white;">SALIR</button>
-        </div>
-        <div id="month-nav" class="month-selector"></div>
+  <div class="controls">
+    <h3 style="margin:0; color:var(--p);">ZenTask @<span id="disp-user"></span></h3>
+    <div class="nav-buttons">
+      <button onclick="filtrarSemana(this)" id="btn-default">SEMANA</button>
+      <button onclick="toggleMeses(this)">MES</button>
+      <button onclick="filtrarTodo(this)">AÑO</button>
+      <button onclick="exportarPDF()" style="background:var(--pdf); color:white;">PDF</button>
+      <button onclick="borrarTodo()" style="background:var(--d); color:white;">BORRAR AÑO</button>
+      <button onclick="location.reload()" style="background:var(--dark); color:white;">SALIR</button>
+      <button onclick="subscribePush()" style="background:var(--p);color:white;border:none;border-radius:6px;padding:10px;">
+        Activar recordatorios
+      </button>
     </div>
-    <div id="calendario" class="year-grid"></div>
+    <div id="month-nav" class="month-selector"></div>
+  </div>
+  <div id="calendario" class="year-grid"></div>
 </div>
+
 <script>
-    const URL = "https://odpeozxpgthiqhzktpaq.supabase.co/rest/v1/tasks";
-    const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kcGVvenhwZ3RoaXFoemt0cGFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NjAxNzYsImV4cCI6MjA4NDMzNjE3Nn0.pdcQJGZ8FcNUn77JrOrNWkPJp-_ink9zIjkPwsbu-9U";
-    let currentUser = "";
-    const headers = { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' };
-    const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+  let currentUser = "";
 
-    function login() {
-        const val = document.getElementById('user-in').value.trim();
-        if(val) {
-            currentUser = val.toLowerCase();
-            document.getElementById('disp-user').innerText = val.toUpperCase();
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block';
-            init();
-        }
+  function login() {
+    const input = document.getElementById("user-in").value.trim();
+    if (input.length === 0) {
+      alert("Por favor, escribe un nombre de usuario");
+      return;
     }
+    currentUser = input;
+    document.getElementById("disp-user").textContent = currentUser;
+    document.getElementById("login-screen").style.display = "none";
+    document.getElementById("app-content").style.display = "block";
+    if (typeof load === "function") load();
+  }
 
-    function init() {
-        const grid = document.getElementById('calendario');
-        const mNav = document.getElementById('month-nav');
-        grid.innerHTML = ""; mNav.innerHTML = "";
-        meses.forEach((m, i) => {
-            const btn = document.createElement('button');
-            btn.innerText = m; btn.onclick = () => { filtrarMes(i); document.querySelectorAll('.month-selector button').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); };
-            mNav.appendChild(btn);
-        });
-        let f = new Date("2026-01-01T00:00:00");
-        while(f.getFullYear() === 2026) {
-            const iso = f.toLocaleDateString('sv-SE');
-            const d = document.createElement('div');
-            d.className = 'day-card'; d.dataset.date = iso; d.dataset.mes = f.getMonth();
-            d.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;">
-                <b style="font-size:0.8rem;">${f.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'}).toUpperCase()}</b>
-                <div style="display:flex;align-items:center;gap:5px;"><span id="t-${iso}" class="day-total">0 min</span>
-                <button onclick="borrarDia('${iso}')" style="border:none;background:none;color:red;cursor:pointer;font-size:1rem;">🗑️</button></div>
-                </div><div id="l-${iso}" style="margin:8px 0;flex-grow:1;"></div>
-                <div class="add-area"><input id="i-${iso}" placeholder="Tarea..." style="padding:6px;border-radius:4px;border:1px solid #ddd;font-size:16px;">
-                <div style="display:flex;gap:3px;"><input type="number" id="m-${iso}" placeholder="Min" style="width:50px;padding:6px;border-radius:4px;border:1px solid #ddd;font-size:16px;">
-                <button onclick="add('${iso}')" style="flex-grow:1;background:var(--p);color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">OK</button></div></div>`;
-            grid.appendChild(d);
-            f.setDate(f.getDate()+1);
-        }
-        load(); filtrarSemana(document.getElementById('btn-default'));
-    }
+  // Registro del Service Worker
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js")
+      .then(() => console.log("Service Worker registrado"))
+      .catch(err => console.error("Error SW:", err));
+  }
 
-    async function load() {
-        const res = await fetch(`${URL}?name=eq.${currentUser}`, { headers });
-        const data = await res.json();
-        document.querySelectorAll('[id^="l-"]').forEach(el => el.innerHTML = "");
-        document.querySelectorAll('.day-total').forEach(el => el.innerText = "0 min");
-        let sums = {};
-        data.sort((a,b)=>a.id-b.id).forEach(t => {
-            sums[t.task_date] = (sums[t.task_date] || 0) + (t.duration_minutes || 0);
-            const cont = document.getElementById(`l-${t.task_date}`);
-            if(cont) cont.innerHTML += `<div class="task-item" style="background:hsl(${Math.abs(t.title.charCodeAt(0)*50)%360},75%,90%)">
-                <span style="flex-grow:1">${t.title}</span>
-                <input type="number" value="${t.duration_minutes||0}" class="edit-time" onchange="upd(${t.id},this.value,'${t.task_date}')">
-                <button onclick="del(${t.id})" style="border:none;background:none;color:red;cursor:pointer;font-weight:bold;">×</button></div>`;
-        });
-        for(let iso in sums) { const el = document.getElementById(`t-${iso}`); if(el) el.innerText = `${sums[iso]} min`; }
-    }
+  // Suscripción a notificaciones push
+  async function subscribePush() {
+    const reg = await navigator.serviceWorker.ready;
+    const subscription = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: "<TU_VAPID_PUBLIC_KEY>"
+    });
+    await fetch("https://TU-PROJECT.supabase.co/rest/v1/subscriptions", {
+      method: "POST",
+      headers: {
+        "apikey": "<TU_API_KEY>",
+        "Authorization": "Bearer <TU_API_KEY>",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        user: currentUser,
+        subscription
+      })
+    });
+    alert("✅ Suscripción guardada en Supabase");
+  }
 
-    async function add(iso) {
-        const title = document.getElementById(`i-${iso}`).value;
-        const min = document.getElementById(`m-${iso}`).value || 0;
-        if(!title) return;
-        await fetch(URL, { method:'POST', headers, body: JSON.stringify({title, task_date:iso, name:currentUser, duration_minutes:parseInt(min)})});
-        document.getElementById(`i-${iso}`).value = ""; document.getElementById(`m-${iso}`).value = "";
-        load();
-    }
-
-    async function upd(id, val, iso) {
-        await fetch(`${URL}?id=eq.${id}`, { method:'PATCH', headers, body: JSON.stringify({duration_minutes:parseInt(val)||0})});
-        load();
-    }
-
-    async function del(id) { await fetch(`${URL}?id=eq.${id}`, { method:'DELETE', headers }); load(); }
-    async function borrarDia(iso) { if(confirm("¿Borrar día?")) { await fetch(`${URL}?task_date=eq.${iso}&name=eq.${currentUser}`, { method:'DELETE', headers }); load(); } }
-    async function borrarTodo() { if(confirm("¿BORRAR TODO EL AÑO?")) { await fetch(`${URL}?name=eq.${currentUser}`, { method:'DELETE', headers }); load(); } }
-
-    function setActive(btn) {
-        document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
-        if(btn) btn.classList.add('active');
-        document.getElementById('month-nav').style.display = 'none';
-    }
-
-    function filtrarSemana(btn) {
-        setActive(btn);
-        const h = new Date(); const l = new Date(h);
-        l.setDate(h.getDate() + (h.getDay() === 0 ? -6 : 1 - h.getDay())); l.setHours(0,0,0,0);
-        const d = new Date(l); d.setDate(l.getDate()+6); d.setHours(23,59,59);
-        document.querySelectorAll('.day-card').forEach(c => {
-            const f = new Date(c.dataset.date + "T00:00:00");
-            c.classList.toggle('hidden', !(f >= l && f <= d));
-        });
-    }
-
-    function toggleMeses(btn) {
-        setActive(btn);
-        document.getElementById('month-nav').style.display = 'flex';
-    }
-
-    function filtrarMes(m) {
-        document.querySelectorAll('.day-card').forEach(c => c.classList.toggle('hidden', c.dataset.mes != m));
-    }
-
-    function filtrarTodo(btn) {
-        setActive(btn);
-        document.querySelectorAll('.day-card').forEach(c => c.classList.remove('hidden'));
-    }
-
-    function exportarPDF() {
-        const { jsPDF } = window.jspdf; const doc = new jsPDF(); let y = 20;
-        doc.text(`RuViGesTASK - ${currentUser.toUpperCase()}`, 10, y); y += 10;
-        document.querySelectorAll('.day-card:not(.hidden)').forEach(c => {
-            const ts = c.querySelectorAll('.task-item');
-            if(ts.length) {
-                if(y>270){doc.addPage(); y=20;}
-                doc.text(`${c.querySelector('b').innerText}:`, 10, y); y += 7;
-                ts.forEach(t => { doc.text(`- ${t.querySelector('span').innerText} (${t.querySelector('input').value} min)`, 15, y); y += 6; });
-                y += 4;
-            }
-        });
-        doc.save("RuViGesTASK_2026.pdf");
-    }
+  // Aquí mantenés tus funciones originales:
+  // load(), filtrarSemana(), toggleMeses(), filtrarTodo(), exportarPDF(), borrarTodo()
 </script>
 </body>
 </html>
-
