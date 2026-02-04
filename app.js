@@ -1,6 +1,6 @@
 // Configuración Supabase
 const SUPABASE_URL = "https://victorrusgi.supabase.co";
-const SUPABASE_KEY = "<TU_API_KEY>"; // reemplazá con tu anon key real
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kcGVvenhwZ3RoaXFoemt0cGFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NjAxNzYsImV4cCI6MjA4NDMzNjE3Nn0.pdcQJGZ8FcNUn77JrOrNWkPJp-_ink9zIjkPwsbu-9U"; // reemplazá con tu anon key real
 let currentUser = "";
 
 // Función principal de carga
