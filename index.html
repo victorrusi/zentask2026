@@ -44,6 +44,7 @@
         .add-area { border-top: 1px solid #eee; padding-top: 10px; margin-top: auto; display: flex; flex-direction: column; gap: 6px; }
         .input-row { display: flex; gap: 4px; align-items: center; }
         input[type="time"], input[type="number"], input[type="text"] { border: 1px solid #ddd; border-radius: 6px; padding: 8px; font-size: 16px; }
+        #notif-status { font-size: 0.6rem; color: var(--d); margin-top: 5px; display: none; }
     </style>
 </head>
 <body onclick="activarAudio()">
@@ -58,6 +59,7 @@
 <div id="app-content">
     <div class="controls">
         <h3 style="margin:0; color:var(--p);">RuViGesTASK @<span id="disp-user"></span></h3>
+        <div id="notif-status">⚠️ Notificaciones desactivadas</div>
         <div class="nav-buttons">
             <button onclick="filtrarSemana(this)" id="btn-default">SEMANA</button>
             <button onclick="toggleMeses(this)">MES</button>
@@ -82,9 +84,11 @@
 
     function activarAudio() { 
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
-        // Pedir permiso de notificaciones en PC
-        if ("Notification" in window && Notification.permission !== "granted") {
-            Notification.requestPermission();
+        if ("Notification" in window) {
+            Notification.requestPermission().then(permission => {
+                if(permission !== "granted") document.getElementById('notif-status').style.display = 'block';
+                else document.getElementById('notif-status').style.display = 'none';
+            });
         }
     }
 
@@ -97,8 +101,8 @@
         gain.gain.setValueAtTime(0, audioCtx.currentTime);
         gain.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.1);
         osc.start();
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
-        osc.stop(audioCtx.currentTime + 1);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+        osc.stop(audioCtx.currentTime + 1.5);
     }
 
     function login() {
@@ -109,7 +113,8 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
             init();
-            setInterval(checkAlarms, 20000);
+            // Revisamos cada 15 segundos para no fallar ni un minuto
+            setInterval(checkAlarms, 15000);
         }
     }
 
@@ -211,22 +216,23 @@
             if(t.task_date === hoy && t.task_time === horaActual) {
                 ultimaAlarma = idAlarma;
                 
-                // Vibración y Sonido
+                // Forzar vibración y sonido antes del alert
                 if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500]);
                 beep();
 
-                // Notificación de Escritorio (PC)
+                // Notificación de Sistema
                 if ("Notification" in window && Notification.permission === "granted") {
                     new Notification("⏰ RuViGesTASK", {
-                        body: `Tarea: ${t.title}\nHora: ${t.task_time}`,
-                        icon: "https://cdn-icons-png.flaticon.com/512/906/906334.png"
+                        body: `¡Hora de: ${t.title}!`,
+                        icon: "https://cdn-icons-png.flaticon.com/512/906/906334.png",
+                        tag: idAlarma // Evita duplicados
                     });
                 }
 
-                // Alerta Visual (Móvil y PC)
+                // Alerta Visual
                 setTimeout(() => {
-                    alert(`⏰ ALARMA RuViGesTASK:\n\n${t.title}\nHora: ${t.task_time}`);
-                }, 100);
+                    alert(`⏰ ALARMA RUVI GESTASK:\n\n${t.title}\nHora: ${t.task_time}`);
+                }, 200);
             }
         });
     }
