@@ -26,31 +26,31 @@
         :root { --p: #5c67f2; --bg: #f4f7fe; --d: #ef4444; --pdf: #10b981; --dark: #1e293b; --a: #ff9f43; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; -webkit-tap-highlight-color: transparent; }
         #login-screen { position: fixed; inset: 0; background: var(--p); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        #login-screen input { padding: 12px; border-radius: 8px; border: none; width: 220px; margin-bottom: 10px; text-align: center; font-size: 16px; }
+        #login-screen input { padding: 12px; border-radius: 8px; border: none; width: 220px; margin-bottom: 10px; text-align: center; font-size: 16px; outline: none; }
         #app-content { display: none; }
         .controls { position: sticky; top: 0; z-index: 100; background: white; padding: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
         .nav-buttons { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 5px; }
-        .nav-buttons button { padding: 8px 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.7rem; background: #e2e8f0; }
+        .nav-buttons button { padding: 8px 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.7rem; background: #e2e8f0; color: #1e293b; }
         .nav-buttons button.active { background: var(--p); color: white; }
         .month-selector { display: none; justify-content: center; gap: 3px; margin-top: 10px; flex-wrap: wrap; }
         .year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; padding: 12px; }
-        .day-card { background: white; border-radius: 12px; padding: 12px; border-top: 4px solid var(--p); display: flex; flex-direction: column; min-height: 300px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .day-card { background: white; border-radius: 12px; padding: 12px; border-top: 4px solid var(--p); display: flex; flex-direction: column; min-height: 320px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .hidden { display: none !important; }
-        .day-total { font-size: 0.7rem; background: var(--a); color: white; padding: 2px 6px; border-radius: 10px; }
-        .task-item { padding: 6px 10px; margin-bottom: 5px; border-radius: 8px; display: flex; align-items: center; font-size: 0.8rem; flex-wrap: wrap; }
-        .task-time-label { font-size: 0.7rem; font-weight: bold; background: rgba(255,255,255,0.5); padding: 1px 4px; border-radius: 4px; margin-right: 5px; }
-        .edit-time { width: 35px; padding: 2px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.75rem; text-align: center; }
-        .add-area { border-top: 1px solid #eee; padding-top: 8px; margin-top: auto; display: flex; flex-direction: column; gap: 5px; }
-        .input-row { display: flex; gap: 3px; align-items: center; }
-        input { font-size: 16px !important; } /* Evita zoom en iPhone */
+        .day-total { font-size: 0.7rem; background: var(--a); color: white; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
+        .task-list { margin: 10px 0; flex-grow: 1; }
+        .task-item { padding: 8px 10px; margin-bottom: 6px; border-radius: 10px; display: flex; align-items: center; font-size: 0.85rem; border-left: 4px solid rgba(0,0,0,0.2); }
+        .task-time-label { font-size: 0.75rem; font-weight: bold; background: rgba(255,255,255,0.6); padding: 2px 5px; border-radius: 5px; margin-right: 8px; display: flex; align-items: center; gap: 3px; }
+        .edit-time { width: 38px; padding: 2px; border: 1px solid #ccc; border-radius: 5px; font-size: 0.75rem; text-align: center; font-weight: bold; }
+        .add-area { border-top: 1px solid #eee; padding-top: 10px; margin-top: auto; display: flex; flex-direction: column; gap: 6px; }
+        .input-row { display: flex; gap: 4px; align-items: center; }
+        input[type="time"], input[type="number"], input[type="text"] { border: 1px solid #ddd; border-radius: 6px; padding: 8px; font-size: 16px; }
     </style>
 </head>
-<body>
-
-<div id="login-screen">
-    <h1>RuViGesTASK</h1>
+<body onclick="activarAudio()"> <div id="login-screen">
+    <h1 style="margin-bottom:10px;">RuViGesTASK</h1>
+    <p style="font-size: 0.8rem; opacity: 0.8; margin-bottom: 20px;">Gestión Personalizada de Tareas</p>
     <input type="text" id="user-in" placeholder="Tu nombre..." autocomplete="off">
-    <button onclick="login()" style="padding:12px 25px; cursor:pointer; background:var(--dark); color:white; border:none; border-radius:8px; font-weight:bold;">ENTRAR</button>
+    <button onclick="login()" style="padding:14px 30px; cursor:pointer; background:var(--dark); color:white; border:none; border-radius:10px; font-weight:bold; font-size: 1rem;">ENTRAR</button>
 </div>
 
 <div id="app-content">
@@ -75,6 +75,23 @@
     let currentUser = "";
     const headers = { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' };
     let tareasCargadas = [];
+    let audioCtx = null;
+    let ultimaAlarma = ""; // Evita que la alarma suene varias veces el mismo minuto
+
+    function activarAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+    function beep() {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = "sine"; osc.frequency.value = 880; 
+        gain.gain.setValueAtTime(0, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.1);
+        osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
+        osc.stop(audioCtx.currentTime + 1);
+    }
 
     function login() {
         const val = document.getElementById('user-in').value.trim();
@@ -84,7 +101,7 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
             init();
-            setInterval(checkAlarms, 30000); // Revisa alarmas cada 30 seg
+            setInterval(checkAlarms, 20000); // Revisión más frecuente
         }
     }
 
@@ -109,16 +126,16 @@
                     <b style="font-size:0.8rem;">${f.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'}).toUpperCase()}</b>
                     <div style="display:flex;align-items:center;gap:5px;">
                         <span id="t-${iso}" class="day-total">0 min</span>
-                        <button onclick="borrarDia('${iso}')" style="border:none;background:none;color:red;cursor:pointer;">🗑️</button>
+                        <button onclick="borrarDia('${iso}')" style="border:none;background:none;color:red;cursor:pointer;font-size:1.1rem;">🗑️</button>
                     </div>
                 </div>
-                <div id="l-${iso}" style="margin:8px 0;flex-grow:1;"></div>
+                <div id="l-${iso}" class="task-list"></div>
                 <div class="add-area">
-                    <input id="i-${iso}" placeholder="¿Qué hay que hacer?" style="padding:6px;border-radius:4px;border:1px solid #ddd;">
+                    <input id="i-${iso}" placeholder="Tarea..." style="width:92%;">
                     <div class="input-row">
-                        <input type="time" id="h-${iso}" style="width:85px;padding:5px;border-radius:4px;border:1px solid #ddd;">
-                        <input type="number" id="m-${iso}" placeholder="Min" style="width:45px;padding:5px;border-radius:4px;border:1px solid #ddd;">
-                        <button onclick="add('${iso}')" style="flex-grow:1;background:var(--p);color:white;border:none;border-radius:4px;padding:7px;font-weight:bold;">OK</button>
+                        <input type="time" id="h-${iso}" style="flex:1;">
+                        <input type="number" id="m-${iso}" placeholder="Min" style="width:50px;">
+                        <button onclick="add('${iso}')" style="background:var(--p);color:white;border:none;border-radius:6px;padding:10px 15px;font-weight:bold;cursor:pointer;">OK</button>
                     </div>
                 </div>`;
             grid.appendChild(d);
@@ -130,20 +147,22 @@
     async function load() {
         const res = await fetch(`${URL}?name=eq.${currentUser}`, { headers });
         tareasCargadas = await res.json();
-        document.querySelectorAll('[id^="l-"]').forEach(el => el.innerHTML = "");
+        document.querySelectorAll('.task-list').forEach(el => el.innerHTML = "");
         document.querySelectorAll('.day-total').forEach(el => el.innerText = "0 min");
         let sums = {};
+        
+        // Ordenar por hora
         tareasCargadas.sort((a,b)=> (a.task_time || "99:99").localeCompare(b.task_time || "99:99")).forEach(t => {
             sums[t.task_date] = (sums[t.task_date] || 0) + (t.duration_minutes || 0);
             const cont = document.getElementById(`l-${t.task_date}`);
             if(cont) {
-                const color = `hsl(${Math.abs(t.title.charCodeAt(0)*50)%360},75%,90%)`;
+                const color = `hsl(${Math.abs(t.title.charCodeAt(0)*60)%360},70%,90%)`;
                 cont.innerHTML += `
                     <div class="task-item" style="background:${color}">
                         ${t.task_time ? `<span class="task-time-label">⏰ ${t.task_time}</span>` : ''}
-                        <span style="flex-grow:1">${t.title}</span>
+                        <span style="flex-grow:1; font-weight:500;">${t.title}</span>
                         <input type="number" value="${t.duration_minutes||0}" class="edit-time" onchange="upd(${t.id},this.value)">
-                        <button onclick="del(${t.id})" style="border:none;background:none;color:red;font-weight:bold;">×</button>
+                        <button onclick="del(${t.id})" style="border:none;background:none;color:red;font-weight:bold;margin-left:5px;cursor:pointer;">×</button>
                     </div>`;
             }
         });
@@ -170,18 +189,25 @@
     }
 
     async function del(id) { await fetch(`${URL}?id=eq.${id}`, { method:'DELETE', headers }); load(); }
-    async function borrarDia(iso) { if(confirm("¿Borrar día?")) { await fetch(`${URL}?task_date=eq.${iso}&name=eq.${currentUser}`, { method:'DELETE', headers }); load(); } }
-    async function borrarTodo() { if(confirm("¿BORRAR TODO?")) { await fetch(`${URL}?name=eq.${currentUser}`, { method:'DELETE', headers }); load(); } }
+    async function borrarDia(iso) { if(confirm("¿Limpiar día?")) { await fetch(`${URL}?task_date=eq.${iso}&name=eq.${currentUser}`, { method:'DELETE', headers }); load(); } }
+    async function borrarTodo() { if(confirm("¿BORRAR TODO EL AÑO?")) { await fetch(`${URL}?name=eq.${currentUser}`, { method:'DELETE', headers }); load(); } }
 
     function checkAlarms() {
         const ahora = new Date();
         const horaActual = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0');
         const hoy = ahora.toLocaleDateString('sv-SE');
-        
+        const idAlarma = hoy + horaActual;
+
+        if (idAlarma === ultimaAlarma) return;
+
         tareasCargadas.forEach(t => {
             if(t.task_date === hoy && t.task_time === horaActual) {
-                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-                alert(`⏰ ALARMA: ${t.title}`);
+                ultimaAlarma = idAlarma;
+                if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500]);
+                beep();
+                setTimeout(() => {
+                    alert(`⏰ ALARMA RuViGesTASK:\n\n${t.title}\nHora: ${t.task_time}`);
+                }, 100);
             }
         });
     }
@@ -209,21 +235,29 @@
 
     function exportarPDF() {
         const { jsPDF } = window.jspdf; const doc = new jsPDF(); let y = 20;
-        doc.text(`RuViGesTASK - ${currentUser.toUpperCase()}`, 10, y); y += 10;
+        doc.setFontSize(18); doc.setTextColor(92, 103, 242);
+        doc.text(`RuViGesTASK - REPORTE 2026`, 10, y); y += 10;
+        doc.setFontSize(12); doc.setTextColor(30, 41, 59);
+        doc.text(`Usuario: ${currentUser.toUpperCase()}`, 10, y); y += 10;
+        
         document.querySelectorAll('.day-card:not(.hidden)').forEach(c => {
             const ts = c.querySelectorAll('.task-item');
             if(ts.length) {
                 if(y>270){doc.addPage(); y=20;}
+                doc.setFont(undefined, 'bold');
                 doc.text(`${c.querySelector('b').innerText}:`, 10, y); y += 7;
+                doc.setFont(undefined, 'normal');
                 ts.forEach(t => { 
-                    const h = t.querySelector('.task-time-label')?.innerText || "";
-                    doc.text(`${h} - ${t.querySelector('span').innerText} (${t.querySelector('input').value} min)`, 15, y); 
+                    const h = t.querySelector('.task-time-label')?.innerText.replace('⏰ ', '') || "--:--";
+                    const titulo = t.querySelector('span').innerText;
+                    const mins = t.querySelector('input').value;
+                    doc.text(`[${h}] ${titulo} (${mins} min)`, 15, y); 
                     y += 6; 
                 });
                 y += 4;
             }
         });
-        doc.save("RuViGesTASK_2026.pdf");
+        doc.save(`RuViGesTASK_${currentUser}_2026.pdf`);
     }
 </script>
 </body>
