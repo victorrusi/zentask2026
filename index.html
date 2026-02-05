@@ -44,14 +44,13 @@
         .add-area { border-top: 1px solid #eee; padding-top: 10px; margin-top: auto; display: flex; flex-direction: column; gap: 6px; }
         .input-row { display: flex; gap: 4px; align-items: center; }
         input[type="time"], input[type="number"], input[type="text"] { border: 1px solid #ddd; border-radius: 6px; padding: 8px; font-size: 16px; }
-        #notif-status { font-size: 0.6rem; color: var(--d); margin-top: 5px; display: none; }
     </style>
 </head>
 <body onclick="activarAudio()">
 
 <div id="login-screen">
     <h1 style="margin-bottom:10px;">RuViGesTASK</h1>
-    <p style="font-size: 0.8rem; opacity: 0.8; margin-bottom: 20px;">Gestión de Tareas Avanzada</p>
+    <p style="font-size: 0.8rem; opacity: 0.8; margin-bottom: 20px;">Gestión de Tareas 2026</p>
     <input type="text" id="user-in" placeholder="Tu nombre..." autocomplete="off">
     <button onclick="login()" style="padding:14px 30px; cursor:pointer; background:var(--dark); color:white; border:none; border-radius:10px; font-weight:bold; font-size: 1rem;">ENTRAR</button>
 </div>
@@ -59,7 +58,6 @@
 <div id="app-content">
     <div class="controls">
         <h3 style="margin:0; color:var(--p);">RuViGesTASK @<span id="disp-user"></span></h3>
-        <div id="notif-status">⚠️ Notificaciones desactivadas</div>
         <div class="nav-buttons">
             <button onclick="filtrarSemana(this)" id="btn-default">SEMANA</button>
             <button onclick="toggleMeses(this)">MES</button>
@@ -84,12 +82,6 @@
 
     function activarAudio() { 
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
-        if ("Notification" in window) {
-            Notification.requestPermission().then(permission => {
-                if(permission !== "granted") document.getElementById('notif-status').style.display = 'block';
-                else document.getElementById('notif-status').style.display = 'none';
-            });
-        }
     }
 
     function beep() {
@@ -99,10 +91,10 @@
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.type = "sine"; osc.frequency.value = 880; 
         gain.gain.setValueAtTime(0, audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.1);
+        gain.gain.linearRampToValueAtTime(0.8, audioCtx.currentTime + 0.1);
         osc.start();
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
-        osc.stop(audioCtx.currentTime + 1.5);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 2);
+        osc.stop(audioCtx.currentTime + 2);
     }
 
     function login() {
@@ -113,8 +105,7 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
             init();
-            // Revisamos cada 15 segundos para no fallar ni un minuto
-            setInterval(checkAlarms, 15000);
+            setInterval(checkAlarms, 10000); // Revisión cada 10 segundos
         }
     }
 
@@ -139,16 +130,16 @@
                     <b style="font-size:0.8rem;">${f.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'}).toUpperCase()}</b>
                     <div style="display:flex;align-items:center;gap:5px;">
                         <span id="t-${iso}" class="day-total">0 min</span>
-                        <button onclick="borrarDia('${iso}')" style="border:none;background:none;color:red;cursor:pointer;font-size:1.1rem;">🗑️</button>
+                        <button onclick="borrarDia('${iso}')" style="border:none;background:none;color:red;cursor:pointer;">🗑️</button>
                     </div>
                 </div>
                 <div id="l-${iso}" class="task-list"></div>
                 <div class="add-area">
-                    <input id="i-${iso}" placeholder="Tarea..." style="width:92%;">
+                    <input id="i-${iso}" placeholder="¿Qué hacer?" style="width:92%;">
                     <div class="input-row">
                         <input type="time" id="h-${iso}" style="flex:1;">
                         <input type="number" id="m-${iso}" placeholder="Min" style="width:50px;">
-                        <button onclick="add('${iso}')" style="background:var(--p);color:white;border:none;border-radius:6px;padding:10px 15px;font-weight:bold;cursor:pointer;">OK</button>
+                        <button onclick="add('${iso}')" style="background:var(--p);color:white;border:none;border-radius:6px;padding:10px 15px;font-weight:bold;">OK</button>
                     </div>
                 </div>`;
             grid.appendChild(d);
@@ -163,7 +154,6 @@
         document.querySelectorAll('.task-list').forEach(el => el.innerHTML = "");
         document.querySelectorAll('.day-total').forEach(el => el.innerText = "0 min");
         let sums = {};
-        
         tareasCargadas.sort((a,b)=> (a.task_time || "99:99").localeCompare(b.task_time || "99:99")).forEach(t => {
             sums[t.task_date] = (sums[t.task_date] || 0) + (t.duration_minutes || 0);
             const cont = document.getElementById(`l-${t.task_date}`);
@@ -174,7 +164,7 @@
                         ${t.task_time ? `<span class="task-time-label">⏰ ${t.task_time}</span>` : ''}
                         <span style="flex-grow:1; font-weight:500;">${t.title}</span>
                         <input type="number" value="${t.duration_minutes||0}" class="edit-time" onchange="upd(${t.id},this.value)">
-                        <button onclick="del(${t.id})" style="border:none;background:none;color:red;font-weight:bold;margin-left:5px;cursor:pointer;">×</button>
+                        <button onclick="del(${t.id})" style="border:none;background:none;color:red;font-weight:bold;">×</button>
                     </div>`;
             }
         });
@@ -186,22 +176,14 @@
         const time = document.getElementById(`h-${iso}`).value;
         const min = document.getElementById(`m-${iso}`).value || 0;
         if(!title) return;
-        await fetch(URL, { method:'POST', headers, body: JSON.stringify({
-            title, task_date:iso, name:currentUser, duration_minutes:parseInt(min), task_time: time
-        })});
-        document.getElementById(`i-${iso}`).value = ""; 
-        document.getElementById(`h-${iso}`).value = "";
-        document.getElementById(`m-${iso}`).value = "";
+        await fetch(URL, { method:'POST', headers, body: JSON.stringify({title, task_date:iso, name:currentUser, duration_minutes:parseInt(min), task_time: time})});
+        document.getElementById(`i-${iso}`).value = ""; document.getElementById(`h-${iso}`).value = ""; document.getElementById(`m-${iso}`).value = "";
         load();
     }
 
-    async function upd(id, val) {
-        await fetch(`${URL}?id=eq.${id}`, { method:'PATCH', headers, body: JSON.stringify({duration_minutes:parseInt(val)||0})});
-        load();
-    }
-
+    async function upd(id, val) { await fetch(`${URL}?id=eq.${id}`, { method:'PATCH', headers, body: JSON.stringify({duration_minutes:parseInt(val)||0})}); load(); }
     async function del(id) { await fetch(`${URL}?id=eq.${id}`, { method:'DELETE', headers }); load(); }
-    async function borrarDia(iso) { if(confirm("¿Borrar tareas?")) { await fetch(`${URL}?task_date=eq.${iso}&name=eq.${currentUser}`, { method:'DELETE', headers }); load(); } }
+    async function borrarDia(iso) { if(confirm("¿Borrar día?")) { await fetch(`${URL}?task_date=eq.${iso}&name=eq.${currentUser}`, { method:'DELETE', headers }); load(); } }
     async function borrarTodo() { if(confirm("¿BORRAR TODO EL AÑO?")) { await fetch(`${URL}?name=eq.${currentUser}`, { method:'DELETE', headers }); load(); } }
 
     function checkAlarms() {
@@ -216,22 +198,16 @@
             if(t.task_date === hoy && t.task_time === horaActual) {
                 ultimaAlarma = idAlarma;
                 
-                // Forzar vibración y sonido antes del alert
-                if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500]);
-                beep();
-
-                // Notificación de Sistema
-                if ("Notification" in window && Notification.permission === "granted") {
-                    new Notification("⏰ RuViGesTASK", {
-                        body: `¡Hora de: ${t.title}!`,
-                        icon: "https://cdn-icons-png.flaticon.com/512/906/906334.png",
-                        tag: idAlarma // Evita duplicados
-                    });
+                // VIBRACIÓN FUERTE ANTES DEL ALERT
+                if (navigator.vibrate) {
+                    navigator.vibrate([1000, 500, 1000, 500, 1000]);
                 }
+                
+                beep(); // Sonido
 
-                // Alerta Visual
+                // El alert detiene el código, por eso la vibración va antes
                 setTimeout(() => {
-                    alert(`⏰ ALARMA RUVI GESTASK:\n\n${t.title}\nHora: ${t.task_time}`);
+                    alert(`⏰ ALARMA RUVI GESTASK:\n\n${t.title}`);
                 }, 200);
             }
         });
@@ -260,29 +236,21 @@
 
     function exportarPDF() {
         const { jsPDF } = window.jspdf; const doc = new jsPDF(); let y = 20;
-        doc.setFontSize(18); doc.setTextColor(92, 103, 242);
-        doc.text(`RuViGesTASK - REPORTE 2026`, 10, y); y += 10;
-        doc.setFontSize(12); doc.setTextColor(30, 41, 59);
-        doc.text(`Usuario: ${currentUser.toUpperCase()}`, 10, y); y += 10;
-        
+        doc.text(`RuViGesTASK - ${currentUser.toUpperCase()}`, 10, y); y += 10;
         document.querySelectorAll('.day-card:not(.hidden)').forEach(c => {
             const ts = c.querySelectorAll('.task-item');
             if(ts.length) {
                 if(y>270){doc.addPage(); y=20;}
-                doc.setFont(undefined, 'bold');
                 doc.text(`${c.querySelector('b').innerText}:`, 10, y); y += 7;
-                doc.setFont(undefined, 'normal');
                 ts.forEach(t => { 
                     const h = t.querySelector('.task-time-label')?.innerText.replace('⏰ ', '') || "--:--";
-                    const titulo = t.querySelector('span').innerText;
-                    const mins = t.querySelector('input').value;
-                    doc.text(`[${h}] ${titulo} (${mins} min)`, 15, y); 
+                    doc.text(`[${h}] ${t.querySelector('span').innerText} (${t.querySelector('input').value} min)`, 15, y); 
                     y += 6; 
                 });
                 y += 4;
             }
         });
-        doc.save(`RuViGesTASK_${currentUser}_2026.pdf`);
+        doc.save(`Reporte_${currentUser}.pdf`);
     }
 </script>
 </body>
