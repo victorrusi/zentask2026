@@ -46,9 +46,11 @@
         input[type="time"], input[type="number"], input[type="text"] { border: 1px solid #ddd; border-radius: 6px; padding: 8px; font-size: 16px; }
     </style>
 </head>
-<body onclick="activarAudio()"> <div id="login-screen">
+<body onclick="activarAudio()">
+
+<div id="login-screen">
     <h1 style="margin-bottom:10px;">RuViGesTASK</h1>
-    <p style="font-size: 0.8rem; opacity: 0.8; margin-bottom: 20px;">Gestión Personalizada de Tareas</p>
+    <p style="font-size: 0.8rem; opacity: 0.8; margin-bottom: 20px;">Gestión de Tareas Avanzada</p>
     <input type="text" id="user-in" placeholder="Tu nombre..." autocomplete="off">
     <button onclick="login()" style="padding:14px 30px; cursor:pointer; background:var(--dark); color:white; border:none; border-radius:10px; font-weight:bold; font-size: 1rem;">ENTRAR</button>
 </div>
@@ -76,9 +78,15 @@
     const headers = { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' };
     let tareasCargadas = [];
     let audioCtx = null;
-    let ultimaAlarma = ""; // Evita que la alarma suene varias veces el mismo minuto
+    let ultimaAlarma = "";
 
-    function activarAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    function activarAudio() { 
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+        // Pedir permiso de notificaciones en PC
+        if ("Notification" in window && Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+    }
 
     function beep() {
         if (!audioCtx) return;
@@ -101,7 +109,7 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
             init();
-            setInterval(checkAlarms, 20000); // Revisión más frecuente
+            setInterval(checkAlarms, 20000);
         }
     }
 
@@ -151,7 +159,6 @@
         document.querySelectorAll('.day-total').forEach(el => el.innerText = "0 min");
         let sums = {};
         
-        // Ordenar por hora
         tareasCargadas.sort((a,b)=> (a.task_time || "99:99").localeCompare(b.task_time || "99:99")).forEach(t => {
             sums[t.task_date] = (sums[t.task_date] || 0) + (t.duration_minutes || 0);
             const cont = document.getElementById(`l-${t.task_date}`);
@@ -189,7 +196,7 @@
     }
 
     async function del(id) { await fetch(`${URL}?id=eq.${id}`, { method:'DELETE', headers }); load(); }
-    async function borrarDia(iso) { if(confirm("¿Limpiar día?")) { await fetch(`${URL}?task_date=eq.${iso}&name=eq.${currentUser}`, { method:'DELETE', headers }); load(); } }
+    async function borrarDia(iso) { if(confirm("¿Borrar tareas?")) { await fetch(`${URL}?task_date=eq.${iso}&name=eq.${currentUser}`, { method:'DELETE', headers }); load(); } }
     async function borrarTodo() { if(confirm("¿BORRAR TODO EL AÑO?")) { await fetch(`${URL}?name=eq.${currentUser}`, { method:'DELETE', headers }); load(); } }
 
     function checkAlarms() {
@@ -203,8 +210,20 @@
         tareasCargadas.forEach(t => {
             if(t.task_date === hoy && t.task_time === horaActual) {
                 ultimaAlarma = idAlarma;
+                
+                // Vibración y Sonido
                 if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500]);
                 beep();
+
+                // Notificación de Escritorio (PC)
+                if ("Notification" in window && Notification.permission === "granted") {
+                    new Notification("⏰ RuViGesTASK", {
+                        body: `Tarea: ${t.title}\nHora: ${t.task_time}`,
+                        icon: "https://cdn-icons-png.flaticon.com/512/906/906334.png"
+                    });
+                }
+
+                // Alerta Visual (Móvil y PC)
                 setTimeout(() => {
                     alert(`⏰ ALARMA RuViGesTASK:\n\n${t.title}\nHora: ${t.task_time}`);
                 }, 100);
