@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <title>RuViGesTASK 2026</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#5c67f2">
     
     <script>
@@ -17,17 +15,10 @@
             "display": "standalone",
             "background_color": "#f4f7fe",
             "theme_color": "#5c67f2",
-            "description": "Gestor de Tareas RuViGesTASK",
-            "icons": [{
-                "src": "https://cdn-icons-png.flaticon.com/512/906/906334.png",
-                "sizes": "512x512",
-                "type": "image/png"
-            }]
+            "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/906/906334.png","sizes": "512x512","type": "image/png"}]
         };
-        const stringManifest = JSON.stringify(myManifest);
-        const blob = new Blob([stringManifest], {type: 'application/json'});
-        const manifestURL = URL.createObjectURL(blob);
-        document.querySelector('head').innerHTML += `<link rel="manifest" href="${manifestURL}">`;
+        const blob = new Blob([JSON.stringify(myManifest)], {type: 'application/json'});
+        document.querySelector('head').innerHTML += `<link rel="manifest" href="${URL.createObjectURL(blob)}">`;
     </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -35,28 +26,33 @@
         :root { --p: #5c67f2; --bg: #f4f7fe; --d: #ef4444; --pdf: #10b981; --dark: #1e293b; --a: #ff9f43; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; -webkit-tap-highlight-color: transparent; }
         #login-screen { position: fixed; inset: 0; background: var(--p); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        #login-screen input { padding: 12px; border-radius: 8px; border: none; width: 220px; margin-bottom: 10px; text-align: center; font-size: 16px; outline: none; }
+        #login-screen input { padding: 12px; border-radius: 8px; border: none; width: 220px; margin-bottom: 10px; text-align: center; font-size: 16px; }
         #app-content { display: none; }
         .controls { position: sticky; top: 0; z-index: 100; background: white; padding: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
         .nav-buttons { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 5px; }
-        .nav-buttons button { padding: 8px 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.7rem; background: #e2e8f0; color: #1e293b; }
+        .nav-buttons button { padding: 8px 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.7rem; background: #e2e8f0; }
         .nav-buttons button.active { background: var(--p); color: white; }
         .month-selector { display: none; justify-content: center; gap: 3px; margin-top: 10px; flex-wrap: wrap; }
         .year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; padding: 12px; }
-        .day-card { background: white; border-radius: 12px; padding: 12px; border-top: 4px solid var(--p); display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .day-card { background: white; border-radius: 12px; padding: 12px; border-top: 4px solid var(--p); display: flex; flex-direction: column; min-height: 300px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .hidden { display: none !important; }
-        .day-total { font-size: 0.7rem; background: var(--a); color: white; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
-        .task-item { padding: 6px 10px; margin-bottom: 5px; border-radius: 8px; display: flex; align-items: center; font-size: 0.8rem; }
-        .edit-time { width: 35px; padding: 2px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.75rem; margin: 0 5px; text-align: center; }
+        .day-total { font-size: 0.7rem; background: var(--a); color: white; padding: 2px 6px; border-radius: 10px; }
+        .task-item { padding: 6px 10px; margin-bottom: 5px; border-radius: 8px; display: flex; align-items: center; font-size: 0.8rem; flex-wrap: wrap; }
+        .task-time-label { font-size: 0.7rem; font-weight: bold; background: rgba(255,255,255,0.5); padding: 1px 4px; border-radius: 4px; margin-right: 5px; }
+        .edit-time { width: 35px; padding: 2px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.75rem; text-align: center; }
         .add-area { border-top: 1px solid #eee; padding-top: 8px; margin-top: auto; display: flex; flex-direction: column; gap: 5px; }
+        .input-row { display: flex; gap: 3px; align-items: center; }
+        input { font-size: 16px !important; } /* Evita zoom en iPhone */
     </style>
 </head>
 <body>
+
 <div id="login-screen">
-    <h1 style="margin-bottom:20px;">RuViGesTASK</h1>
+    <h1>RuViGesTASK</h1>
     <input type="text" id="user-in" placeholder="Tu nombre..." autocomplete="off">
     <button onclick="login()" style="padding:12px 25px; cursor:pointer; background:var(--dark); color:white; border:none; border-radius:8px; font-weight:bold;">ENTRAR</button>
 </div>
+
 <div id="app-content">
     <div class="controls">
         <h3 style="margin:0; color:var(--p);">RuViGesTASK @<span id="disp-user"></span></h3>
@@ -72,12 +68,13 @@
     </div>
     <div id="calendario" class="year-grid"></div>
 </div>
+
 <script>
     const URL = "https://odpeozxpgthiqhzktpaq.supabase.co/rest/v1/tasks";
     const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kcGVvenhwZ3RoaXFoemt0cGFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NjAxNzYsImV4cCI6MjA4NDMzNjE3Nn0.pdcQJGZ8FcNUn77JrOrNWkPJp-_ink9zIjkPwsbu-9U";
     let currentUser = "";
     const headers = { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' };
-    const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+    let tareasCargadas = [];
 
     function login() {
         const val = document.getElementById('user-in').value.trim();
@@ -87,6 +84,7 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
             init();
+            setInterval(checkAlarms, 30000); // Revisa alarmas cada 30 seg
         }
     }
 
@@ -94,24 +92,35 @@
         const grid = document.getElementById('calendario');
         const mNav = document.getElementById('month-nav');
         grid.innerHTML = ""; mNav.innerHTML = "";
+        const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
         meses.forEach((m, i) => {
             const btn = document.createElement('button');
             btn.innerText = m; btn.onclick = () => { filtrarMes(i); };
             mNav.appendChild(btn);
         });
+
         let f = new Date("2026-01-01T00:00:00");
         while(f.getFullYear() === 2026) {
             const iso = f.toLocaleDateString('sv-SE');
             const d = document.createElement('div');
             d.className = 'day-card'; d.dataset.date = iso; d.dataset.mes = f.getMonth();
-            d.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;">
-                <b style="font-size:0.8rem;">${f.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'}).toUpperCase()}</b>
-                <div style="display:flex;align-items:center;gap:5px;"><span id="t-${iso}" class="day-total">0 min</span>
-                <button onclick="borrarDia('${iso}')" style="border:none;background:none;color:red;cursor:pointer;font-size:1rem;">🗑️</button></div>
-                </div><div id="l-${iso}" style="margin:8px 0;flex-grow:1;"></div>
-                <div class="add-area"><input id="i-${iso}" placeholder="Tarea..." style="padding:6px;border-radius:4px;border:1px solid #ddd;font-size:16px;">
-                <div style="display:flex;gap:3px;"><input type="number" id="m-${iso}" placeholder="Min" style="width:50px;padding:6px;border-radius:4px;border:1px solid #ddd;font-size:16px;">
-                <button onclick="add('${iso}')" style="flex-grow:1;background:var(--p);color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">OK</button></div></div>`;
+            d.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <b style="font-size:0.8rem;">${f.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'}).toUpperCase()}</b>
+                    <div style="display:flex;align-items:center;gap:5px;">
+                        <span id="t-${iso}" class="day-total">0 min</span>
+                        <button onclick="borrarDia('${iso}')" style="border:none;background:none;color:red;cursor:pointer;">🗑️</button>
+                    </div>
+                </div>
+                <div id="l-${iso}" style="margin:8px 0;flex-grow:1;"></div>
+                <div class="add-area">
+                    <input id="i-${iso}" placeholder="¿Qué hay que hacer?" style="padding:6px;border-radius:4px;border:1px solid #ddd;">
+                    <div class="input-row">
+                        <input type="time" id="h-${iso}" style="width:85px;padding:5px;border-radius:4px;border:1px solid #ddd;">
+                        <input type="number" id="m-${iso}" placeholder="Min" style="width:45px;padding:5px;border-radius:4px;border:1px solid #ddd;">
+                        <button onclick="add('${iso}')" style="flex-grow:1;background:var(--p);color:white;border:none;border-radius:4px;padding:7px;font-weight:bold;">OK</button>
+                    </div>
+                </div>`;
             grid.appendChild(d);
             f.setDate(f.getDate()+1);
         }
@@ -120,31 +129,42 @@
 
     async function load() {
         const res = await fetch(`${URL}?name=eq.${currentUser}`, { headers });
-        const data = await res.json();
+        tareasCargadas = await res.json();
         document.querySelectorAll('[id^="l-"]').forEach(el => el.innerHTML = "");
         document.querySelectorAll('.day-total').forEach(el => el.innerText = "0 min");
         let sums = {};
-        data.sort((a,b)=>a.id-b.id).forEach(t => {
+        tareasCargadas.sort((a,b)=> (a.task_time || "99:99").localeCompare(b.task_time || "99:99")).forEach(t => {
             sums[t.task_date] = (sums[t.task_date] || 0) + (t.duration_minutes || 0);
             const cont = document.getElementById(`l-${t.task_date}`);
-            if(cont) cont.innerHTML += `<div class="task-item" style="background:hsl(${Math.abs(t.title.charCodeAt(0)*50)%360},75%,90%)">
-                <span style="flex-grow:1">${t.title}</span>
-                <input type="number" value="${t.duration_minutes||0}" class="edit-time" onchange="upd(${t.id},this.value,'${t.task_date}')">
-                <button onclick="del(${t.id})" style="border:none;background:none;color:red;cursor:pointer;font-weight:bold;">×</button></div>`;
+            if(cont) {
+                const color = `hsl(${Math.abs(t.title.charCodeAt(0)*50)%360},75%,90%)`;
+                cont.innerHTML += `
+                    <div class="task-item" style="background:${color}">
+                        ${t.task_time ? `<span class="task-time-label">⏰ ${t.task_time}</span>` : ''}
+                        <span style="flex-grow:1">${t.title}</span>
+                        <input type="number" value="${t.duration_minutes||0}" class="edit-time" onchange="upd(${t.id},this.value)">
+                        <button onclick="del(${t.id})" style="border:none;background:none;color:red;font-weight:bold;">×</button>
+                    </div>`;
+            }
         });
         for(let iso in sums) { const el = document.getElementById(`t-${iso}`); if(el) el.innerText = `${sums[iso]} min`; }
     }
 
     async function add(iso) {
-        const title = document.getElementById(`i-${iso}`).value;
+        const title = document.getElementById(`i-${iso}`).value.trim();
+        const time = document.getElementById(`h-${iso}`).value;
         const min = document.getElementById(`m-${iso}`).value || 0;
         if(!title) return;
-        await fetch(URL, { method:'POST', headers, body: JSON.stringify({title, task_date:iso, name:currentUser, duration_minutes:parseInt(min)})});
-        document.getElementById(`i-${iso}`).value = ""; document.getElementById(`m-${iso}`).value = "";
+        await fetch(URL, { method:'POST', headers, body: JSON.stringify({
+            title, task_date:iso, name:currentUser, duration_minutes:parseInt(min), task_time: time
+        })});
+        document.getElementById(`i-${iso}`).value = ""; 
+        document.getElementById(`h-${iso}`).value = "";
+        document.getElementById(`m-${iso}`).value = "";
         load();
     }
 
-    async function upd(id, val, iso) {
+    async function upd(id, val) {
         await fetch(`${URL}?id=eq.${id}`, { method:'PATCH', headers, body: JSON.stringify({duration_minutes:parseInt(val)||0})});
         load();
     }
@@ -153,9 +173,22 @@
     async function borrarDia(iso) { if(confirm("¿Borrar día?")) { await fetch(`${URL}?task_date=eq.${iso}&name=eq.${currentUser}`, { method:'DELETE', headers }); load(); } }
     async function borrarTodo() { if(confirm("¿BORRAR TODO?")) { await fetch(`${URL}?name=eq.${currentUser}`, { method:'DELETE', headers }); load(); } }
 
+    function checkAlarms() {
+        const ahora = new Date();
+        const horaActual = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0');
+        const hoy = ahora.toLocaleDateString('sv-SE');
+        
+        tareasCargadas.forEach(t => {
+            if(t.task_date === hoy && t.task_time === horaActual) {
+                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                alert(`⏰ ALARMA: ${t.title}`);
+            }
+        });
+    }
+
     function setActive(btn) {
         document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
-        if(btn) btn.classList.add('active');
+        if(btn && btn.tagName === "BUTTON") btn.classList.add('active');
         document.getElementById('month-nav').style.display = 'none';
     }
 
@@ -170,19 +203,9 @@
         });
     }
 
-    function toggleMeses(btn) {
-        setActive(btn);
-        document.getElementById('month-nav').style.display = 'flex';
-    }
-
-    function filtrarMes(m) {
-        document.querySelectorAll('.day-card').forEach(c => c.classList.toggle('hidden', c.dataset.mes != m));
-    }
-
-    function filtrarTodo(btn) {
-        setActive(btn);
-        document.querySelectorAll('.day-card').forEach(c => c.classList.remove('hidden'));
-    }
+    function toggleMeses(btn) { setActive(btn); document.getElementById('month-nav').style.display = 'flex'; }
+    function filtrarMes(m) { document.querySelectorAll('.day-card').forEach(c => c.classList.toggle('hidden', c.dataset.mes != m)); }
+    function filtrarTodo(btn) { setActive(btn); document.querySelectorAll('.day-card').forEach(c => c.classList.remove('hidden')); }
 
     function exportarPDF() {
         const { jsPDF } = window.jspdf; const doc = new jsPDF(); let y = 20;
@@ -192,7 +215,11 @@
             if(ts.length) {
                 if(y>270){doc.addPage(); y=20;}
                 doc.text(`${c.querySelector('b').innerText}:`, 10, y); y += 7;
-                ts.forEach(t => { doc.text(`- ${t.querySelector('span').innerText} (${t.querySelector('input').value} min)`, 15, y); y += 6; });
+                ts.forEach(t => { 
+                    const h = t.querySelector('.task-time-label')?.innerText || "";
+                    doc.text(`${h} - ${t.querySelector('span').innerText} (${t.querySelector('input').value} min)`, 15, y); 
+                    y += 6; 
+                });
                 y += 4;
             }
         });
